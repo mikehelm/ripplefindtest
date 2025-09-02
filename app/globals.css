@@ -1,0 +1,600 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(59, 130, 246, 0.2); /* Light blue background */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.4); /* Light blue thumb */
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.6); /* Brighter blue on hover */
+}
+
+/* Firefox scrollbar styling */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.4) rgba(59, 130, 246, 0.2); /* Light blue colors */
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float-animation {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Gradient text effects */
+.gradient-text {
+  @apply bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent;
+}
+
+/* Custom button styles */
+.btn-ripple {
+  @apply relative overflow-hidden transition-all duration-300 ease-out;
+}
+
+.btn-ripple:hover {
+  @apply scale-105 shadow-lg;
+}
+
+.btn-ripple::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-ripple:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Impact typography */
+.impact-title {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.supporting-text {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* Invitation card */
+.invitation-card {
+  transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Section animations */
+.section-reveal {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 1s ease-out;
+}
+
+.section-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Classified document style */
+.classified-title {
+  position: relative;
+  display: inline-block;
+}
+
+.classified-title::before {
+  content: 'CLASSIFIED';
+  position: absolute;
+  top: -20px;
+  left: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ef4444;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+}
+
+.classified-title::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -10px;
+  right: -10px;
+  bottom: -5px;
+  border: 2px solid #ef4444;
+  border-radius: 4px;
+  opacity: 0.3;
+  transform: rotate(-1deg);
+}
+
+/* Scroll reveal animations */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease-out;
+}
+
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Vertical text for tab */
+.name-container {
+  position: relative;
+  display: inline-block;
+  min-width: 300px;
+  height: 1.2em;
+  vertical-align: baseline;
+  text-align: center;
+}
+
+.animated-name {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  transition: opacity 0.5s ease-out, transform 0.5s ease-in;
+  opacity: 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.animated-name.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.animated-name.exiting {
+  opacity: 0;
+  transform: translateX(50%);
+}
+
+.animated-name .parenthetical {
+  font-size: 0.8em;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+/* Hero text animations */
+.hero-headline {
+  animation: fadeInUp 1.2s ease-out;
+}
+
+.hero-subline {
+  animation: fadeInUp 1.2s ease-out 0.3s both;
+}
+
+.hero-cta {
+  animation: fadeInUp 1.2s ease-out 0.6s both;
+}
+
+/* Delayed fade-in for HUGE text */
+.huge-text {
+  opacity: 0;
+  animation: fadeInUp 1s ease-out 0s both;
+}
+
+/* Floating scroll arrow */
+.scroll-arrow {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  animation: float-arrow 2s ease-in-out infinite;
+  transition: opacity 0.3s ease;
+}
+
+.scroll-arrow.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Invitation card hover effects */
+.invitation-card {
+  transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.invitation-card:hover {
+  transform: translateX(-120px);
+}
+
+/* Enhanced button styles */
+.btn-primary {
+  @apply bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105;
+}
+
+.btn-secondary {
+  @apply bg-white text-gray-700 font-semibold px-8 py-4 rounded-xl border border-gray-200 hover:border-gray-300 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105;
+}
+
+/* Mobile-first responsive text */
+.hero-text {
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.hero-sub {
+  font-size: clamp(1.125rem, 3vw, 1.25rem);
+  line-height: 1.5;
+}
+
+/* Impact text sizing */
+.impact-text {
+  font-size: clamp(3rem, 12vw, 8rem);
+}
+
+.section-text {
+  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+}
+
+/* Glow effect for "big" text */
+.big-glow-text {
+  position: relative;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.big-glow-text::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, rgba(20, 184, 166, 0.2) 50%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.4s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.big-glow-text:hover::before {
+  width: 60px;
+  height: 30px;
+}
+
+/* Example popup animations */
+@keyframes slideInBounce {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%) scale(0.95);
+  }
+  70% {
+    opacity: 1;
+    transform: translateX(10px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes slideOutBounce {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  30% {
+    opacity: 0.8;
+    transform: translateX(-10px) scale(0.98);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-100%) scale(0.95);
+  }
+}
+
+/* Attention-grabbing bounce animation for sidebar */
+@keyframes bounceAttention {
+  0% {
+    transform: translateX(-328px);
+  }
+  25% {
+    transform: translateX(-300px);
+  }
+  50% {
+    transform: translateX(-328px);
+  }
+  75% {
+    transform: translateX(-310px);
+  }
+  100% {
+    transform: translateX(-328px);
+  }
+}
+
+.animate-bounce-attention {
+  animation: bounceAttention 1.5s ease-in-out;
+}
+
+/* Custom slow animations for impressive effects */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 4s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+/* Custom scrollbar styling for example sidebar */
+.example-sidebar {
+  /* Custom scrollbar for webkit browsers */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.example-sidebar::-webkit-scrollbar {
+  width: 2px; /* Very thin scrollbar */
+}
+
+.example-sidebar::-webkit-scrollbar-track {
+  background: transparent; /* Invisible track */
+}
+
+.example-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3); /* Very subtle thumb */
+  border-radius: 1px;
+  transition: background 0.3s ease;
+}
+
+.example-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5); /* Slightly more visible on hover */
+}
+
+/* Only show scrollbar when scrolling */
+.example-sidebar:not(:hover)::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.example-sidebar:hover::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+}
+
+/* Ripple animation styles */
+.ripple-wave {
+  animation: ripple 4s ease-out infinite;
+}
+
+@keyframes ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.3;
+  }
+}
+
+/* Gentle swaying animation for invitation card */
+@keyframes gentle-sway {
+  0%, 100% {
+    transform: rotate(-1deg) translateY(0px);
+  }
+  25% {
+    transform: rotate(1deg) translateY(-3px);
+  }
+  50% {
+    transform: rotate(2deg) translateY(-5px);
+  }
+  75% {
+    transform: rotate(-0.5deg) translateY(-2px);
+  }
+}
+
+.animate-gentle-sway {
+  animation: gentle-sway 4s ease-in-out infinite;
+}
+
+/* Bounce-in animation for YOU'RE IT text */
+@keyframes bounce-in {
+  0% {
+    transform: translateX(-100%) scale(0.9);
+    opacity: 0;
+  }
+  70% {
+    transform: translateX(-45%) scale(1.02);
+    opacity: 1;
+  }
+  85% {
+    transform: translateX(-52%) scale(0.99);
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.hover\:scale-102:hover {
+  transform: scale(1.02);
+}
+
+/* Ripple animation styles */
+.ripple-wave {
+  animation: ripple 4s ease-out infinite;
+}
+
+.interactive-circle:not(.settled-circle) {
+  animation: rotate-around 8s linear infinite;
+}
+
+.interactive-circle.animation-triggered {
+  animation: rotate-to-bottom 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.central-circle {
+  animation: pulse-center 2s ease-in-out infinite;
+}
+
+/* Logo container that counteracts parent rotation */
+.logo-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Counter-rotate the logo to stay upright */
+.interactive-circle:not(.animation-triggered) .logo-container {
+  animation: counter-rotate 8s linear infinite;
+}
+
+.interactive-circle.animation-triggered .logo-container {
+  animation: counter-rotate-settle 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out 0.5s both;
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Subtle dot pattern background */
+.dot-pattern {
+  background-image: radial-gradient(circle, rgba(59, 130, 246, 0.3) 2px, transparent 2px);
+  background-size: 30px 30px;
+}
+
+.first-ripple-container {
+  animation: rotate-container 12s linear infinite;
+}
