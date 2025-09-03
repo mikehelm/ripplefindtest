@@ -65,9 +65,9 @@ export function WhyYouSection({ onTitleClick }: WhyYouSectionProps) {
 
               {/* Step 3: Company Born */}
               <div className="flex flex-col items-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                    <Rocket className="w-7 h-7 text-blue-600" />
+                <div className="w-24 h-24 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center shadow-lg relative overflow-visible">
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                    <Rocket className="w-24 h-24 text-blue-600" />
                   </div>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mt-3">Company Born</h3>
