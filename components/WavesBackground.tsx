@@ -33,7 +33,7 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10' }: Wa
       // Define base waves (back, middle, front)
       const baseWaves = [
         { amplitude: 58.5, frequency: 0.02, speed: 0.02, opacity: 0.5, color: '59, 130, 246' },   // blue (front wave)
-        { amplitude: 39, frequency: 0.015, speed: 0.025, opacity: 1, color: '29, 78, 216' },   // medium blue
+        { amplitude: 39, frequency: 0.015, speed: 0.025, opacity: 1, color: '45, 94, 192' },   // blended medium blue
         { amplitude: 48.75, frequency: 0.018, speed: 0.015, opacity: 1, color: '30, 58, 138' } // dark blue
       ];
 
