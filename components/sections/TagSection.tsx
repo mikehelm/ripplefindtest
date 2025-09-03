@@ -178,7 +178,7 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
         {/* Digital Invitation Card */}
         <div 
           ref={invitationCardRef}
-          className="invitation-card relative max-w-md mx-auto p-8 rounded-2xl mb-8 hero-subline overflow-visible bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 animate-gentle-sway"
+          className="invitation-card relative max-w-md mx-auto p-8 rounded-2xl mb-8 hero-subline overflow-visible bg-white border-2 border-gray-200 animate-gentle-sway"
           onMouseEnter={() => setShowBubble(true)}
           onMouseLeave={() => setShowBubble(false)}
         >
@@ -187,12 +187,12 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
               <UserCheck className="w-6 h-6 text-white" />
             </div>
             <div className="text-left">
-              <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide">RippleFind Invitation</p>
-              <p className="text-lg font-bold text-gray-900 dark:text-white">{invitedFirstName} {invitedLastName}</p> {/* Dynamic: Uses full invited name */}
+              <p className="text-sm text-gray-500 uppercase tracking-wide">RippleFind Invitation</p>
+              <p className="text-lg font-bold text-gray-900">{invitedFirstName} {invitedLastName}</p> {/* Dynamic: Uses full invited name */}
             </div>
           </div>
-          <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
-            <p className="text-sm text-gray-700 dark:text-gray-400 mb-2">Invited by</p>
+          <div className="border-t border-gray-200 pt-4">
+            <p className="text-sm text-gray-700 mb-2">Invited by</p>
             <p className="text-xl font-bold text-blue-600">{displayInviterName}</p> {/* Dynamic with fallback */}
           </div>
         </div>
@@ -204,7 +204,7 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
 
       {/* Stationary Talking Bubble */}
       <div 
-        className={`fixed bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-2xl p-6 shadow-2xl transition-opacity duration-500 pointer-events-none z-10 w-80 ${
+        className={`fixed bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-2xl transition-opacity duration-500 pointer-events-none z-10 w-80 ${
           showBubble ? 'opacity-100' : 'opacity-0'
         }`}
         style={{
@@ -212,11 +212,11 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
           left: `${bubblePosition.left}px`,
         }}
       >
-        <p className="text-lg font-semibold text-gray-800 dark:text-gray-200 leading-relaxed">
+        <p className="text-lg font-semibold text-gray-800 leading-relaxed">
           {displayInviterName} would like you to be in his first ripple.
         </p>
         {/* Arrow pointing down */}
-        <div className="absolute top-full left-1/4 transform -translate-x-1/2 w-0 h-0 border-l-[16px] border-r-[16px] border-t-[16px] border-l-transparent border-r-transparent border-t-white dark:border-t-gray-800 drop-shadow-md"></div>
+        <div className="absolute top-full left-1/4 transform -translate-x-1/2 w-0 h-0 border-l-[16px] border-r-[16px] border-t-[16px] border-l-transparent border-r-transparent border-t-white drop-shadow-md"></div>
       </div>
     </section>
   );
