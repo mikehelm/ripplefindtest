@@ -38,18 +38,21 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10' }: Wa
       ];
 
       // Choose which layers to draw based on variant
-      const indices = variant === 'front' ? [2] : [0, 1];
+      // Front: blue (index 0). Behind: purple (index 2) + teal (index 1) for depth.
+      const indices = variant === 'front' ? [0] : [2, 1];
       const waves = indices.map(i => baseWaves[i]);
 
       waves.forEach((wave, index) => {
         ctx.beginPath();
-        ctx.moveTo(0, canvas.height * 0.5);
+        const baseY = canvas.height * 0.5 + (variant === 'front' ? canvas.height * 0.05 : 0);
+        ctx.moveTo(0, baseY);
 
         // Draw wave path
+        const amp = wave.amplitude * (variant === 'front' ? 0.5 : 1);
         for (let x = 0; x <= canvas.width; x += 2) {
-          const y = canvas.height * 0.5 + 
-                   Math.sin(x * wave.frequency + time * wave.speed) * wave.amplitude +
-                   Math.sin(x * wave.frequency * 0.5 + time * wave.speed * 1.5) * (wave.amplitude * 0.5);
+          const y = baseY + 
+                   Math.sin(x * wave.frequency + time * wave.speed) * amp +
+                   Math.sin(x * wave.frequency * 0.5 + time * wave.speed * 1.5) * (amp * 0.5);
           ctx.lineTo(x, y);
         }
 
