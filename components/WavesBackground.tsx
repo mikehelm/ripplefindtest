@@ -63,8 +63,20 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10' }: Wa
 
         // Fill with gradient
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, `rgba(${wave.color}, ${wave.opacity})`);
-        gradient.addColorStop(1, `rgba(${wave.color}, ${wave.opacity})`);
+
+        if (variant === 'front') {
+          // Front wave: gradient from light blue to dark blue
+          const frontWaveColor = baseWaves[0].color;
+          const frontWaveOpacity = baseWaves[0].opacity;
+          const backWaveColor = baseWaves[2].color; // Dark blue for the bottom
+
+          gradient.addColorStop(0, `rgba(${frontWaveColor}, ${frontWaveOpacity})`);
+          gradient.addColorStop(1, `rgba(${backWaveColor}, ${frontWaveOpacity})`);
+        } else {
+          // Background waves: solid color
+          gradient.addColorStop(0, `rgba(${wave.color}, ${wave.opacity})`);
+          gradient.addColorStop(1, `rgba(${wave.color}, ${wave.opacity})`);
+        }
         
         ctx.fillStyle = gradient;
         ctx.fill();
