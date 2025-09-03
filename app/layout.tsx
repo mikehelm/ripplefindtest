@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://ripplefind.netlify.app'),
   title: 'RippleFind - Start Your Ripple',
   description: 'You\'re just 5 people away from the next billion-dollar founder. Start your Ripple and own a piece of what\'s coming.',
   keywords: 'startup, founder, cofounder, referral, networking, ripple',

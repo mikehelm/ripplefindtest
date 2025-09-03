@@ -22,6 +22,9 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
   const invitationCardRef = useRef<HTMLDivElement>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Safe fallback for legacy default value without requiring a remount
+  const displayInviterName = inviterFullName === 'The Member' ? 'Mike Helm' : inviterFullName;
+
   // Check if we have invalid link data and show popup
   useEffect(() => {
     // Temporarily disabled
@@ -190,7 +193,7 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
           </div>
           <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
             <p className="text-sm text-gray-700 dark:text-gray-400 mb-2">Invited by</p>
-            <p className="text-xl font-bold text-blue-600">{inviterFullName}</p> {/* Dynamic: Uses inviterFullName */}
+            <p className="text-xl font-bold text-blue-600">{displayInviterName}</p> {/* Dynamic with fallback */}
           </div>
         </div>
 
@@ -210,7 +213,7 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
         }}
       >
         <p className="text-lg font-semibold text-gray-800 dark:text-gray-200 leading-relaxed">
-          {inviterFullName} would like you to be in his first ripple.
+          {displayInviterName} would like you to be in his first ripple.
         </p>
         {/* Arrow pointing down */}
         <div className="absolute top-full left-1/4 transform -translate-x-1/2 w-0 h-0 border-l-[16px] border-r-[16px] border-t-[16px] border-l-transparent border-r-transparent border-t-white dark:border-t-gray-800 drop-shadow-md"></div>

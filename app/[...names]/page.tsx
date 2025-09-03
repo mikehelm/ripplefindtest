@@ -97,11 +97,11 @@ export default function DynamicLandingPage() {
   // Parse names from URL parameters and store in state for dynamic updates
   const [displayNames, setDisplayNames] = useState<ParsedNames>(() => {
     const defaultNames = {
-      inviterFirstName: 'The',
-      inviterLastName: 'Member',
+      inviterFirstName: 'Mike',
+      inviterLastName: 'Helm',
       invitedFirstName: 'XXX',
       invitedLastName: 'KAS-Angel',
-      inviterFullName: 'The Member',
+      inviterFullName: 'Mike Helm',
       invitedFullName: 'XXX KAS-Angel',
     };
 

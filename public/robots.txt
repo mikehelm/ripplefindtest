@@ -1,0 +1,3 @@
+# Temporary robots for testing/staging
+User-agent: *
+Disallow: /

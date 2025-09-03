@@ -10,3 +10,9 @@
 
 [functions]
   node_bundler = "esbuild"
+
+# Temporary: prevent search engine indexing during testing
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"

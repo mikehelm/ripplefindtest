@@ -118,11 +118,11 @@ const formatSlugToName = (slug: string): { firstName: string; lastName: string; 
  */
 export const getNamesFromUrlPath = (path?: string): ParsedNames => {
   const defaultNames: ParsedNames = {
-    inviterFirstName: 'The',
-    inviterLastName: 'Member',
+    inviterFirstName: 'Mike',
+    inviterLastName: 'Helm',
     invitedFirstName: 'XXX',
     invitedLastName: 'KAS-Angel',
-    inviterFullName: 'The Member',
+    inviterFullName: 'Mike Helm',
     invitedFullName: 'XXX KAS-Angel',
   };
 
