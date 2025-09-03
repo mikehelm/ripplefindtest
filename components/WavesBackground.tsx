@@ -34,7 +34,7 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10' }: Wa
       const baseWaves = [
         { amplitude: 58.5, frequency: 0.02, speed: 0.02, opacity: 0.5, color: '59, 130, 246' },   // blue
         { amplitude: 39, frequency: 0.015, speed: 0.025, opacity: 0.4, color: '20, 184, 166' },   // teal
-        { amplitude: 48.75, frequency: 0.018, speed: 0.015, opacity: 0.35, color: '99, 102, 241' } // indigo (front)
+        { amplitude: 48.75, frequency: 0.018, speed: 0.015, opacity: 0.35, color: '30, 58, 138' } // dark blue
       ];
 
       // Choose which layers to draw based on variant

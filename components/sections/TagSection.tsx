@@ -169,7 +169,7 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
                   }`}
                   onClick={onTitleClick}
                 >
-                  YOU'RE&nbsp;IT
+                  YOU&apos;RE&nbsp;IT
                 </h1>
               </div>
             </div>
