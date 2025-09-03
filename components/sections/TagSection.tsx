@@ -19,11 +19,24 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
   const [showBubble, setShowBubble] = useState(false);
   const [bubblePosition, setBubblePosition] = useState({ top: 0, left: 0 });
   const [showInvalidLinkPopup, setShowInvalidLinkPopup] = useState(false);
+  const [waveOffset, setWaveOffset] = useState(0);
   const invitationCardRef = useRef<HTMLDivElement>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Safe fallback for legacy default value without requiring a remount
   const displayInviterName = inviterFullName === 'The Member' ? 'Mike Helm' : inviterFullName;
+
+  const handleWaveUpdate = useCallback((y: number) => {
+    // The y value is the wave's position on the canvas. We'll find its deviation
+    // from the midpoint and use that to create a gentle bobbing motion.
+    if (invitationCardRef.current) {
+      const canvasHeight = invitationCardRef.current.closest('section')?.offsetHeight || 0;
+      const midPoint = canvasHeight * 0.5;
+      const offset = y - midPoint;
+      // Apply a damping factor to make the movement more subtle
+      setWaveOffset(offset * 0.2);
+    }
+  }, []);
 
   // Check if we have invalid link data and show popup
   useEffect(() => {
@@ -78,7 +91,7 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
   return (
     <section id="tag-section" className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-600 to-teal-600 overflow-hidden pt-16 pb-32">
       {/* Water Effect Background (Back + Middle) */}
-      <WavesBackground variant="behind" zIndexClass="z-0" />
+      <WavesBackground variant="behind" zIndexClass="z-0" onWaveUpdate={handleWaveUpdate} />
 
       {/* Invalid Link Popup - Temporarily disabled */}
       {/* {showInvalidLinkPopup && (
@@ -180,6 +193,7 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
         <div 
           ref={invitationCardRef}
           className="invitation-card relative max-w-md mx-auto p-8 rounded-2xl mb-8 hero-subline overflow-visible bg-white border-2 border-gray-200 animate-gentle-sway"
+          style={{ transform: `translateY(${waveOffset}px)` }}
           onMouseEnter={() => setShowBubble(true)}
           onMouseLeave={() => setShowBubble(false)}
         >
