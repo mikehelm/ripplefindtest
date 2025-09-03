@@ -77,8 +77,8 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
 
   return (
     <section id="tag-section" className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-600 to-teal-600 overflow-hidden pt-16 pb-32">
-      {/* Water Effect Background */}
-      <WavesBackground />
+      {/* Water Effect Background (Back + Middle) */}
+      <WavesBackground variant="behind" zIndexClass="z-0" />
 
       {/* Invalid Link Popup - Temporarily disabled */}
       {/* {showInvalidLinkPopup && (
@@ -136,7 +136,8 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
         </div>
       )} */}
 
-      <div className="max-w-4xl mx-auto text-center -mt-8">
+      {/* Foreground content sits between middle and front waves */}
+      <div className="relative z-10 max-w-4xl mx-auto text-center -mt-8">
         <div className="mb-12 hero-headline">
           <div className="relative h-48 flex items-center justify-center">
             {/* Static TAG Text - always visible */}
@@ -202,9 +203,12 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
         </p>
       </div>
 
+      {/* Front wave overlay */}
+      <WavesBackground variant="front" zIndexClass="z-20" />
+
       {/* Stationary Talking Bubble */}
       <div 
-        className={`fixed bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-2xl transition-opacity duration-500 pointer-events-none z-10 w-80 ${
+        className={`fixed bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-2xl transition-opacity duration-500 pointer-events-none z-30 w-80 ${
           showBubble ? 'opacity-100' : 'opacity-0'
         }`}
         style={{

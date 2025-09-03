@@ -2,7 +2,14 @@
 
 import { useEffect, useRef } from 'react';
 
-export function WavesBackground() {
+type WavesVariant = 'behind' | 'front';
+
+interface WavesBackgroundProps {
+  variant?: WavesVariant; // which layers to draw
+  zIndexClass?: string; // tailwind z-index class
+}
+
+export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10' }: WavesBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
 
@@ -23,12 +30,16 @@ export function WavesBackground() {
     const drawWaves = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Create multiple wave layers for depth
-      const waves = [
-        { amplitude: 58.5, frequency: 0.02, speed: 0.02, opacity: 0.5, color: '59, 130, 246' },
-        { amplitude: 39, frequency: 0.015, speed: 0.025, opacity: 0.4, color: '20, 184, 166' },
-        { amplitude: 48.75, frequency: 0.018, speed: 0.015, opacity: 0.35, color: '99, 102, 241' },
+      // Define base waves (back, middle, front)
+      const baseWaves = [
+        { amplitude: 58.5, frequency: 0.02, speed: 0.02, opacity: 0.5, color: '59, 130, 246' },   // blue
+        { amplitude: 39, frequency: 0.015, speed: 0.025, opacity: 0.4, color: '20, 184, 166' },   // teal
+        { amplitude: 48.75, frequency: 0.018, speed: 0.015, opacity: 0.35, color: '99, 102, 241' } // indigo (front)
       ];
+
+      // Choose which layers to draw based on variant
+      const indices = variant === 'front' ? [2] : [0, 1];
+      const waves = indices.map(i => baseWaves[i]);
 
       waves.forEach((wave, index) => {
         ctx.beginPath();
@@ -49,8 +60,10 @@ export function WavesBackground() {
 
         // Fill with gradient
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, `rgba(${wave.color}, ${wave.opacity})`);
-        gradient.addColorStop(1, `rgba(${wave.color}, ${wave.opacity * 0.5})`);
+        const opacityTop = wave.opacity * (variant === 'front' ? 0.9 : 1);
+        const opacityBottom = (wave.opacity * 0.5) * (variant === 'front' ? 0.9 : 1);
+        gradient.addColorStop(0, `rgba(${wave.color}, ${opacityTop})`);
+        gradient.addColorStop(1, `rgba(${wave.color}, ${opacityBottom})`);
         
         ctx.fillStyle = gradient;
         ctx.fill();
@@ -88,12 +101,12 @@ export function WavesBackground() {
       }
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [variant]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full pointer-events-none z-10"
+      className={`absolute inset-0 w-full h-full pointer-events-none ${zIndexClass}`}
       aria-hidden="true"
     />
   );
