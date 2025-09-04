@@ -218,11 +218,11 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
               <ul className="space-y-2 text-black dark:text-gray-200 font-sans text-sm">
                 <li className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  We receive 2% of the company
+                  We own 2% of the company
                 </li>
                 <li className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  50% shared with 5 Ripplers
+                  We 50% with 5 Ripplers
                 </li>
                 <li className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
