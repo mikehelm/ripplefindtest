@@ -8,9 +8,10 @@ interface WavesBackgroundProps {
   variant?: WavesVariant; // which layers to draw
   zIndexClass?: string; // tailwind z-index class
   onWaveUpdate?: (y: number) => void; // emits Y position of the middle wave
+  baselineRatio?: number; // 0..1 baseline of waves vertically (default 0.4)
 }
 
-export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10', onWaveUpdate }: WavesBackgroundProps) {
+export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10', onWaveUpdate, baselineRatio = 0.4 }: WavesBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
   const darkenRef = useRef<number>(0);
@@ -75,7 +76,7 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10', onWa
 
         // Create wave path
         for (let x = 0; x <= canvas.width; x += 4) {
-          const y = canvas.height * 0.4 + Math.sin((x * wave.frequency) + time * wave.speed) * wave.amplitude;
+          const y = canvas.height * baselineRatio + Math.sin((x * wave.frequency) + time * wave.speed) * wave.amplitude;
           if (x === 0) {
             ctx.lineTo(x, y);
           } else {
@@ -118,7 +119,7 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10', onWa
       if (onWaveUpdate) {
         const mid = baseWaves[1];
         const centerX = canvas.width / 2;
-        const y = canvas.height * 0.4 + Math.sin((centerX * mid.frequency) + time * mid.speed) * mid.amplitude;
+        const y = canvas.height * baselineRatio + Math.sin((centerX * mid.frequency) + time * mid.speed) * mid.amplitude;
         try {
           onWaveUpdate(y);
         } catch {}
@@ -157,7 +158,7 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10', onWa
       window.removeEventListener('resize', handleResize);
       mql && mql.removeEventListener && mql.removeEventListener('change', handleSchemeChange);
     };
-  }, [variant, onWaveUpdate]);
+  }, [variant, onWaveUpdate, baselineRatio]);
 
   return (
     <canvas

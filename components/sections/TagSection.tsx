@@ -94,7 +94,7 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
       {/* Night sky stars (dark mode only) */}
       <StarsBackground className="hidden dark:block z-0" />
       {/* Water Effect Background (Back + Middle) */}
-      <WavesBackground variant="behind" zIndexClass="z-0" onWaveUpdate={handleWaveUpdate} />
+      <WavesBackground variant="behind" zIndexClass="z-0" onWaveUpdate={handleWaveUpdate} baselineRatio={0.5} />
 
       {/* Invalid Link Popup - Temporarily disabled */}
       {/* {showInvalidLinkPopup && (
@@ -221,7 +221,7 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
       </div>
 
       {/* Front wave overlay */}
-      <WavesBackground variant="front" zIndexClass="z-20" />
+      <WavesBackground variant="front" zIndexClass="z-20" baselineRatio={0.5} />
 
       {/* Stationary Talking Bubble */}
       <div 
