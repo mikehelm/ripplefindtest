@@ -23,10 +23,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
         <ThemeProvider
-          defaultTheme="system"
+          defaultTheme="dark"
           storageKey="ripplefind-theme"
         >
           <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">

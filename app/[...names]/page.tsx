@@ -9,6 +9,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { SignInDialog } from '@/components/SignInDialog';
 import { useParams } from 'next/navigation';
 import { ParsedNames } from '@/lib/utils';
+import { InviteProvider } from '@/context/InviteContext';
 
 // Section Components
 import { TagSection } from '@/components/sections/TagSection';
@@ -339,6 +340,7 @@ export default function DynamicLandingPage() {
   };
 
   return (
+    <InviteProvider value={displayNames}>
     <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Navigation */}
       {/* Left Tab - Logo */}
@@ -358,7 +360,7 @@ export default function DynamicLandingPage() {
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-bold text-gray-900 dark:text-white leading-tight -ml-1">RippleFind</span>
-              <span className="text-xs font-light text-gray-500 dark:text-gray-400 leading-none">by Founder Matching Limited</span>
+              <span className="text-xs font-light text-gray-500 dark:text-gray-400 leading-none mt-0.5">by Founder Matching</span>
             </div>
           </div>
         </div>
@@ -413,5 +415,6 @@ export default function DynamicLandingPage() {
         </div>
       </button>
     </div>
+    </InviteProvider>
   );
 }

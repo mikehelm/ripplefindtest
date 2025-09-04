@@ -335,7 +335,7 @@ export default function LandingPage() {
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-bold text-gray-900 dark:text-white leading-tight -ml-1">RippleFind</span>
-              <span className="text-xs font-light text-gray-500 dark:text-gray-400 leading-none">by Founder Matching Limited</span>
+              <span className="text-xs font-light text-gray-500 dark:text-gray-400 leading-none mt-0.5">by Founder Matching</span>
             </div>
           </div>
         </div>

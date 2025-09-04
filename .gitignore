@@ -56,3 +56,5 @@ jspm_packages/
 
 # Bolt specific
 .bolt/
+# Local Netlify folder
+.netlify

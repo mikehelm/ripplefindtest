@@ -94,68 +94,30 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
       {/* Night sky stars (dark mode only) */}
       <StarsBackground className="hidden dark:block z-0" />
       {/* Water Effect Background (Back + Middle) */}
-      <WavesBackground variant="behind" zIndexClass="z-0" onWaveUpdate={handleWaveUpdate} baselineRatio={0.5} />
+      <WavesBackground 
+        variant="behind" 
+        zIndexClass="z-0" 
+        onWaveUpdate={handleWaveUpdate} 
+        baselineRatio={0.5}
+        bubbleOptions={{
+          enabled: true,
+          density: 3,           // not overwhelming
+          minRadius: 2,
+          maxRadius: 10,        // roughly letter height scale
+          speedMin: 40,
+          speedMax: 90,
+          fadeStartRatio: 0.35, // begin fading before halfway
+          maxHeightRatio: 0.5,  // disappear around halfway up
+          baseAlpha: 0.7,
+        }}
+      />
 
-      {/* Invalid Link Popup - Temporarily disabled */}
-      {/* {showInvalidLinkPopup && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl border-2 border-orange-200 dark:border-orange-700 relative animate-in fade-in-0 zoom-in-95 duration-300">
-            <button
-              onClick={() => setShowInvalidLinkPopup(false)}
-              className="absolute top-4 right-4 w-8 h-8 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors"
-            >
-              <X className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-            </button>
-            
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Link Issue</h3>
-            </div>
-            
-            <div className="space-y-4 text-gray-700 dark:text-gray-300">
-              <p className="font-semibold text-gray-900 dark:text-white">
-                The invitation link you used isn&apos;t functioning properly.
-              </p>
-              
-              <p>
-                Please contact the person who invited you to get a fresh link. You don&apos;t want to miss this opportunity!
-              </p>
-              
-              <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg border-l-4 border-blue-400">
-                <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                  💡 <strong>Tip:</strong> Ask them to generate a new invitation link from their RippleFind dashboard.
-                </p>
-              </div>
-            </div>
-            
-            <div className="mt-6 flex space-x-3">
-              <Button
-                onClick={() => {
-                  onUseDemoNames();
-                  setShowInvalidLinkPopup(false);
-                }}
-                className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
-              >
-                See a demo
-              </Button>
-              <Button
-                onClick={() => setShowInvalidLinkPopup(false)}
-                variant="outline"
-                className="flex-1"
-              >
-                Continue Anyway
-              </Button>
-            </div>
-          </div>
-        </div>
-      )} */}
+      
 
       {/* Foreground content sits between middle and front waves */}
-      <div className="relative z-10 max-w-4xl mx-auto text-center -mt-8">
+      <div className="relative z-10 max-w-4xl mx-auto text-center -mt-32">
         <div className="mb-12 hero-headline">
-          <div className="relative h-48 flex items-center justify-center">
+          <div className="relative h-44 flex items-center justify-center">
             {/* Static TAG Text - always visible */}
             <div className="flex flex-col items-center">
               <h1 
@@ -185,18 +147,30 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
                   }`}
                   onClick={onTitleClick}
                 >
-                  YOU&apos;RE&nbsp;IT
+                  {"YOU'RE"}
+                  &nbsp;IT
                 </h1>
               </div>
             </div>
           </div>
         </div>
         
+        {/* CTA line under the title and above the invitation card */}
+        <div className="relative z-30 -mt-2 mb-6">
+          <p className="text-lg text-blue-100 hero-cta opacity-90">
+            <span className="text-xl font-bold text-white mb-2 block">
+              {invitedFirstName && invitedFirstName !== 'The'
+                ? `${invitedFirstName}, you've been pulled into something HUGE!`
+                : "You've been pulled into something HUGE!"}
+            </span>
+          </p>
+        </div>
+
         {/* Digital Invitation Card */}
         <div 
           ref={invitationCardRef}
           className="invitation-card relative max-w-md mx-auto p-8 rounded-2xl mb-8 hero-subline overflow-visible bg-white border-2 border-gray-200 animate-gentle-sway"
-          style={{ transform: `translateY(${waveOffset}px)` }}
+          style={{ transform: `translateY(${waveOffset - 16}px)` }}
           onMouseEnter={() => setShowBubble(true)}
           onMouseLeave={() => setShowBubble(false)}
         >
@@ -215,13 +189,11 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
           </div>
         </div>
 
-        <p className="text-lg text-blue-100 hero-cta opacity-90">
-          <span className="text-xl font-bold text-white mb-4 block">You&apos;ve been pulled into something HUGE!</span>
-        </p>
+        
       </div>
 
       {/* Front wave overlay */}
-      <WavesBackground variant="front" zIndexClass="z-20" baselineRatio={0.5} />
+      <WavesBackground variant="front" zIndexClass="z-20" baselineRatio={0.54} />
 
       {/* Stationary Talking Bubble */}
       <div 
@@ -234,10 +206,10 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
         }}
       >
         <p className="text-lg font-semibold text-gray-800 leading-relaxed">
-          {displayInviterName} would like you to be in his first ripple.
+          {displayInviterName} invited you to be in their first ripple.
         </p>
         {/* Arrow pointing down */}
-        <div className="absolute top-full left-1/4 transform -translate-x-1/2 w-0 h-0 border-l-[16px] border-r-[16px] border-t-[16px] border-l-transparent border-r-transparent border-t-white drop-shadow-md"></div>
+        <div className="absolute top-full left-1/4 transform -translate-x-1/4 w-0 h-0 border-l-[16px] border-r-[16px] border-t-[16px] border-l-transparent border-r-transparent border-t-white drop-shadow-md"></div>
       </div>
     </section>
   );

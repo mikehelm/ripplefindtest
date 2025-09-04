@@ -6,12 +6,14 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, GripVertical, ChevronRight, Info, X } from 'lucide-react';
 import Link from 'next/link';
 import { WavesBackground } from '@/components/WavesBackground';
+import { useInvite } from '@/context/InviteContext';
 
 interface WhatNowSectionProps {
   onTitleClick?: () => void;
 }
 
 export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
+  const { invitedFirstName } = useInvite();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
@@ -124,6 +126,28 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [shouldBounce]);
 
+  // When the What Now section becomes visible, open the sidebar immediately,
+  // then auto-close after a short delay unless the user hovers over it.
+  useEffect(() => {
+    if (!isMobile && showPanel) {
+      // Open right away on arrival
+      setIsPanelOpen(true);
+
+      // Schedule auto-close unless the user interacts by hovering
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        if (!isMouseOverSidebar) {
+          setIsPanelOpen(false);
+        }
+      }, 3000); // 3s grace period
+    }
+
+    // Cleanup any pending timers when visibility changes or component unmounts
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [showPanel, isMobile, isMouseOverSidebar]);
+
   const handleStartRipple = () => {
 
   };
@@ -187,14 +211,14 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
           {/* Scrollable content */}
           <div className="sidebar-content flex-1 overflow-y-auto px-8 pb-8">
             <h2 className="text-2xl font-bold text-black dark:text-white mb-6 font-sans">
-              This could be your story:
+              {invitedFirstName ? `${invitedFirstName}, this could be your story:` : 'This could be your story:'}
             </h2>
 
             <div className="mb-8">
               <ul className="space-y-3 text-black dark:text-gray-200 font-sans">
                 <li className="flex items-start">
                   <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  You shared with a friend
+                  {invitedFirstName ? `${invitedFirstName} shares with a friend` : 'You shared with a friend'}
                 </li>
                 <li className="flex items-start">
                   <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
@@ -239,7 +263,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
                 </li>
                 <li className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  You're five steps away
+                  {invitedFirstName ? `${invitedFirstName}, you're five steps away` : `You're five steps away`}
                 </li>
                 <li className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
@@ -354,7 +378,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
               </p>
               
               <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Your Distance Matters:</h4>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{invitedFirstName ? `Your Distance Matters, ${invitedFirstName}:` : 'Your Distance Matters:'}</h4>
                 <ul className="space-y-1 text-sm">
                   <li>• <strong>Direct referral:</strong> 20% of our 1% = 0.2% ownership</li>
                   <li>• <strong>2nd degree:</strong> 10% of our 1% = 0.1% ownership</li>
