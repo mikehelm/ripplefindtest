@@ -7,11 +7,13 @@ type WavesVariant = 'behind' | 'front';
 interface WavesBackgroundProps {
   variant?: WavesVariant; // which layers to draw
   zIndexClass?: string; // tailwind z-index class
+  onWaveUpdate?: (y: number) => void; // emits Y position of the middle wave
 }
 
-export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10' }: WavesBackgroundProps) {
+export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10', onWaveUpdate }: WavesBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
+  const darkenRef = useRef<number>(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -25,6 +27,30 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10' }: Wa
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
+    };
+
+    // Detect dark mode (supports next-themes 'dark' class and prefers-color-scheme)
+    const computeDarkenFactor = () => {
+      const hasDarkClass = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+      const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return (hasDarkClass || prefersDark) ? 0.2 : 0;
+    };
+
+    darkenRef.current = computeDarkenFactor();
+
+    const mql = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    const handleSchemeChange = () => {
+      darkenRef.current = computeDarkenFactor();
+    };
+    mql && mql.addEventListener && mql.addEventListener('change', handleSchemeChange);
+
+    const darkenColor = (rgb: string, factor: number) => {
+      const [r, g, b] = rgb.split(',').map(v => parseInt(v.trim(), 10));
+      const f = Math.max(0, Math.min(1, factor));
+      const dr = Math.round(r * (1 - f));
+      const dg = Math.round(g * (1 - f));
+      const db = Math.round(b * (1 - f));
+      return `${dr}, ${dg}, ${db}`;
     };
 
     const drawWaves = () => {
@@ -44,16 +70,17 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10' }: Wa
 
       waves.forEach((wave, index) => {
         ctx.beginPath();
-        const baseY = canvas.height * 0.5 + (variant === 'front' ? canvas.height * 0.05 : 0);
-        ctx.moveTo(0, baseY);
+        // Start from the left bottom corner
+        ctx.moveTo(0, canvas.height);
 
-        // Draw wave path
-        const amp = wave.amplitude * (variant === 'front' ? 0.5 : 1);
-        for (let x = 0; x <= canvas.width; x += 2) {
-          const y = baseY + 
-                   Math.sin(x * wave.frequency + time * wave.speed) * amp +
-                   Math.sin(x * wave.frequency * 0.5 + time * wave.speed * 1.5) * (amp * 0.5);
-          ctx.lineTo(x, y);
+        // Create wave path
+        for (let x = 0; x <= canvas.width; x += 4) {
+          const y = canvas.height * 0.4 + Math.sin((x * wave.frequency) + time * wave.speed) * wave.amplitude;
+          if (x === 0) {
+            ctx.lineTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
         }
 
         // Complete the wave shape
@@ -65,9 +92,12 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10' }: Wa
         if (variant === 'front') {
           const gradient = ctx.createLinearGradient(0, canvas.height * 0.3, 0, canvas.height);
           // Front wave: gradient from light blue to dark blue
-          const frontWaveColor = baseWaves[0].color;
+          const frontBase = baseWaves[0].color;
           const frontWaveOpacity = baseWaves[0].opacity;
-          const backWaveColor = baseWaves[2].color; // Dark blue for the bottom
+          const backBase = baseWaves[2].color; // Dark blue for the bottom
+
+          const frontWaveColor = darkenColor(frontBase, darkenRef.current);
+          const backWaveColor = darkenColor(backBase, darkenRef.current);
 
           gradient.addColorStop(0, `rgba(${frontWaveColor}, ${frontWaveOpacity})`);
           gradient.addColorStop(1, `rgba(${backWaveColor}, ${frontWaveOpacity})`);
@@ -75,13 +105,24 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10' }: Wa
         } else {
           // Background waves: solid color
           const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-          gradient.addColorStop(0, `rgba(${wave.color}, ${wave.opacity})`);
-          gradient.addColorStop(1, `rgba(${wave.color}, ${wave.opacity})`);
+          const c = darkenColor(wave.color, darkenRef.current);
+          gradient.addColorStop(0, `rgba(${c}, ${wave.opacity})`);
+          gradient.addColorStop(1, `rgba(${c}, ${wave.opacity})`);
           ctx.fillStyle = gradient;
         }
         
         ctx.fill();
       });
+
+      // Emit middle-wave Y position at canvas center for consumers
+      if (onWaveUpdate) {
+        const mid = baseWaves[1];
+        const centerX = canvas.width / 2;
+        const y = canvas.height * 0.4 + Math.sin((centerX * mid.frequency) + time * mid.speed) * mid.amplitude;
+        try {
+          onWaveUpdate(y);
+        } catch {}
+      }
 
       // Add some floating particles/bubbles
       for (let i = 0; i < 5; i++) {
@@ -114,8 +155,9 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10' }: Wa
         cancelAnimationFrame(animationRef.current);
       }
       window.removeEventListener('resize', handleResize);
+      mql && mql.removeEventListener && mql.removeEventListener('change', handleSchemeChange);
     };
-  }, [variant]);
+  }, [variant, onWaveUpdate]);
 
   return (
     <canvas

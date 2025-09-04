@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { UserCheck, AlertTriangle, X } from 'lucide-react';
 import { WavesBackground } from '@/components/WavesBackground';
+import StarsBackground from '@/components/StarsBackground';
 
 interface TagSectionProps {
   onArrowClick: () => void;
@@ -89,7 +90,9 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
   }, [calculatePosition, debouncedCalculatePosition]);
 
   return (
-    <section id="tag-section" className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-600 to-teal-600 overflow-hidden pt-16 pb-32">
+    <section id="tag-section" className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-600 to-teal-600 dark:from-blue-800 dark:to-teal-800 overflow-hidden pt-16 pb-32">
+      {/* Night sky stars (dark mode only) */}
+      <StarsBackground className="hidden dark:block z-0" />
       {/* Water Effect Background (Back + Middle) */}
       <WavesBackground variant="behind" zIndexClass="z-0" onWaveUpdate={handleWaveUpdate} />
 
