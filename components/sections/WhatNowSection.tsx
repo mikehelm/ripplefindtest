@@ -34,6 +34,46 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Close popup and handle outside clicks
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      // Close popup if clicking outside
+      if (showInfoPopup) {
+        const popup = document.querySelector('.info-popup');
+        if (popup && !popup.contains(e.target as Node)) {
+          setShowInfoPopup(false);
+          // Reopen sidebar if it was closed
+          if (!isPanelOpen) {
+            setIsPanelOpen(true);
+          }
+        }
+      }
+      
+      // Close sidebar on outside click (mobile only)
+      if (isMobile && isPanelOpen && panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setIsPanelOpen(false);
+      }
+    };
+
+    // Close popup on Escape key
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showInfoPopup) {
+        setShowInfoPopup(false);
+        if (!isPanelOpen) {
+          setIsPanelOpen(true);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [showInfoPopup, isPanelOpen, isMobile]);
+
   // Scroll isolation for sidebar
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
@@ -222,7 +262,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
                 </li>
                 <li className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  We 50% with 5 Ripplers
+                  We share 50% with 5 Ripplers
                 </li>
                 <li className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
@@ -319,7 +359,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
 
       {/* Info Popup */}
       {showInfoPopup && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+        <div className="info-popup fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-lg w-full shadow-2xl border border-gray-200 dark:border-gray-700 relative">
             <button
               onClick={() => setShowInfoPopup(false)}
@@ -353,7 +393,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
               
               <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg border-l-4 border-yellow-400">
                 <p className="font-semibold text-gray-900 dark:text-white">
-                  Example: In a $10B company, your $4 million share assumes you&apos;re 5 degrees away. 
+                  The Example assumed you&apos;re 5 degrees away. 
                   If you were the direct referrer, your share would be $40 million!
                 </p>
               </div>
