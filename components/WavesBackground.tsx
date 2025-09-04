@@ -67,7 +67,13 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10', onWa
       // Choose which layers to draw based on variant
       // Front: blue (index 0). Behind: purple (index 2) + teal (index 1) for depth.
       const indices = variant === 'front' ? [0] : [2, 1];
-      const waves = indices.map(i => baseWaves[i]);
+      const waves = indices.map(i => {
+        const w = { ...baseWaves[i] };
+        if (variant === 'front') {
+          w.amplitude = w.amplitude * 0.5; // reduce front wave height by 50%
+        }
+        return w;
+      });
 
       waves.forEach((wave, index) => {
         ctx.beginPath();
