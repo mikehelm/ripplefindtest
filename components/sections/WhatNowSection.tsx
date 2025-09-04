@@ -26,6 +26,9 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
   const [showInfoPopup, setShowInfoPopup] = useState(false);
   const [showDemoEnd, setShowDemoEnd] = useState(false);
   const tabRef = useRef<HTMLDivElement>(null);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+  const [frozenPreviewText, setFrozenPreviewText] = useState<string | null>(null);
+  const [ctaSourceRef, setCtaSourceRef] = useState<'main' | 'floater' | null>(null);
   
   // Lightweight tracking (client-side only for mailto prefill)
   const sectionStartRef = useRef<number | null>(null);
@@ -35,13 +38,25 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
   const sidebarOpenCountRef = useRef<number>(0);
   const sidebarHoverCountRef = useRef<number>(0);
   const endDemoClickedAtRef = useRef<number | null>(null);
+  const eventsRef = useRef<Array<{ t: number; label: string }>>([]);
+  const startTimeRef = useRef<number | null>(null);
+  const lastEventRef = useRef<number | null>(null);
+
+  const logEvent = (label: string) => {
+    const now = Date.now();
+    eventsRef.current.push({ t: now, label });
+    lastEventRef.current = now;
+  };
 
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
     // Start section timer
-    sectionStartRef.current = Date.now();
+    const now = Date.now();
+    sectionStartRef.current = now;
+    startTimeRef.current = now;
+    logEvent('section_mount');
     
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -56,6 +71,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
         sidebarTotalMsRef.current += Date.now() - sidebarOpenAtRef.current;
         sidebarOpenAtRef.current = null;
       }
+      logEvent('section_unmount');
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
@@ -100,6 +116,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
   const handleSidebarMouseEnter = () => {
     setIsMouseOverSidebar(true);
     sidebarHoverCountRef.current += 1;
+    logEvent('sidebar_hover_enter');
     if (!isMobile) {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -110,6 +127,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
 
   const handleSidebarMouseLeave = () => {
     setIsMouseOverSidebar(false);
+    logEvent('sidebar_hover_leave');
     if (!isMobile) {
       timeoutRef.current = setTimeout(() => {
         setIsPanelOpen(false);
@@ -126,6 +144,9 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
         const windowHeight = window.innerHeight;
         // Show panel when What Now section is 70% visible
         const shouldShow = rect.top <= windowHeight * 0.3;
+        if (shouldShow && !showPanel) {
+          logEvent('section_visible');
+        }
         setShowPanel(shouldShow);
       }
       
@@ -148,7 +169,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
     window.addEventListener('scroll', handleScroll);
     
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [shouldBounce]);
+  }, [shouldBounce, showPanel]);
 
   // When the What Now section becomes visible, open the sidebar immediately,
   // then auto-close after a short delay unless the user hovers over it.
@@ -179,20 +200,67 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
       if (!sidebarOpenAtRef.current) {
         sidebarOpenAtRef.current = Date.now();
         sidebarOpenCountRef.current += 1;
+        logEvent('sidebar_open');
       }
     } else {
       // closing
       if (sidebarOpenAtRef.current) {
         sidebarTotalMsRef.current += Date.now() - sidebarOpenAtRef.current;
         sidebarOpenAtRef.current = null;
+        logEvent('sidebar_close');
       }
     }
   }, [isPanelOpen]);
 
-  const handleStartRipple = () => {
-    // For the demo, show an end-of-demo message
+  // Build a report text without mutating timers, as of the provided time
+  const buildReportSnapshot = (asOf: number, includeTotalsLabel: string | null) => {
+    const effectiveSectionMs = sectionTotalMsRef.current + (sectionStartRef.current ? asOf - sectionStartRef.current : 0);
+    const effectiveSidebarMs = sidebarTotalMsRef.current + (sidebarOpenAtRef.current ? asOf - sidebarOpenAtRef.current : 0);
+    const seconds = (ms: number) => Math.round(ms / 100) / 10; // 0.1s precision
+    const lines: string[] = [];
+    lines.push(`Demo feedback`);
+    lines.push(`Invited: ${invitedFirstName ?? ''}`);
+    lines.push(`Date: ${new Date(asOf).toISOString()}`);
+    lines.push(`Section: What Now`);
+    if (includeTotalsLabel) {
+      lines.push(`${includeTotalsLabel}: ${seconds(effectiveSectionMs)}s`);
+    } else {
+      lines.push(`Time on section: ${seconds(effectiveSectionMs)}s`);
+    }
+    lines.push(`Sidebar opened: ${sidebarOpenCountRef.current}x`);
+    lines.push(`Sidebar hover count: ${sidebarHoverCountRef.current}x`);
+    lines.push(`Sidebar total open time: ${seconds(effectiveSidebarMs)}s`);
+    lines.push(`End-of-demo clicked: ${endDemoClickedAtRef.current ? 'yes' : 'no'}`);
+    lines.push(`User agent: ${navigator.userAgent}`);
+    lines.push('');
+    // Timeline
+    if (startTimeRef.current) {
+      lines.push('Timeline:');
+      let prev = startTimeRef.current;
+      for (const ev of eventsRef.current) {
+        const dt = seconds(ev.t - prev);
+        const sinceStart = seconds(ev.t - startTimeRef.current);
+        lines.push(`- [t+${sinceStart}s | +${dt}s] ${ev.label}`);
+        prev = ev.t;
+      }
+    }
+    lines.push('');
+    lines.push('Your comments:');
+    return lines.join('\n');
+  };
+
+  // mailto removed per request; copy flow is the primary path
+
+  const handleStartRipple = (source: 'main' | 'floater') => {
+    // For the demo, show an end-of-demo message and freeze preview at CTA click
+    setCtaSourceRef(source);
+    const now = Date.now();
+    logEvent(`cta_click_${source}`);
+    endDemoClickedAtRef.current = now;
+    // Freeze preview snapshot up to the CTA click moment with a clear label
+    const frozen = buildReportSnapshot(now, 'Total time until CTA click');
+    setFrozenPreviewText(frozen);
     setShowDemoEnd(true);
-    endDemoClickedAtRef.current = Date.now();
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -306,7 +374,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
                 </li>
                 <li className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  {invitedFirstName ? `${invitedFirstName}, you're five steps away` : `You're five steps away`}
+                  {invitedFirstName ? `${invitedFirstName}, you\u2019re five steps away` : `You\u2019re five steps away`}
                 </li>
                 <li className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
@@ -314,7 +382,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
                 </li>
                 <li className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  That's 0.04% ownership.
+                  That\u2019s 0.04% ownership.
                 </li>
               </ul>
             </div>
@@ -326,9 +394,9 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
                 <div className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-1">Your share:</div>
                 <div className="text-blue-600 dark:text-blue-400">$4 million</div>
               </div>
-              <p className="text-gray-800 dark:text-gray-200 font-sans italic text-xl font-bold mt-3">
-                Just for telling a friend
-              </p>
+              <p className="text-gray-700 dark:text-gray-300 mt-2">
+              Please click <strong>Copy</strong> below and send the results back to me. Thank you!
+            </p>
             </div>
 
             {/* Divider */}
@@ -337,7 +405,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
             </div>
 
             {/* Referral Breakdown */}
-            <div className="p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
+            <div className="p-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg">
               <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 text-center">
                 Referral Breakdown
               </h4>
@@ -362,7 +430,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
                   <span>• 5th</span>
                   <span className="font-medium">2%</span>
                 </li>
-                <li className="flex justify-between items-center border-t border-gray-200 dark:border-gray-600 pt-2 mt-2">
+                <li className="flex justify-between items-center border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
                   <span>• Affiliate</span>
                   <span className="font-medium">10% flat (any depth)</span>
                 </li>
@@ -402,65 +470,49 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
       {showDemoEnd && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4" onClick={() => setShowDemoEnd(false)}>
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-lg w-full shadow-2xl border border-gray-200 dark:border-gray-700 relative" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => setShowDemoEnd(false)}
-              className="absolute top-4 right-4 w-8 h-8 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors"
-              aria-label="Close"
-            >
-              <X className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-            </button>
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">End of Demo</h3>
             <div className="space-y-4 text-gray-700 dark:text-gray-300">
               <p>You’ve reached the end of this demo. This is just a test build.</p>
-              <p>
-                Click the button below to open your email with a pre-filled message that includes the test info we collected on this page (like how long you viewed this section and sidebar activity). You can review or edit it before sending.
-              </p>
-              <p>
-                Prefer to write your own? Email us at{' '}
-                <a href="mailto:mikehelm@gmail.com" className="text-blue-600 dark:text-blue-400 underline">mikehelm@gmail.com</a>.
-              </p>
             </div>
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => setShowDemoEnd(false)}
-                className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => {
-                  // finalize sidebar timing if still open
-                  if (sidebarOpenAtRef.current) {
-                    sidebarTotalMsRef.current += Date.now() - sidebarOpenAtRef.current;
-                    sidebarOpenAtRef.current = null;
-                  }
-                  if (sectionStartRef.current) {
-                    sectionTotalMsRef.current += Date.now() - sectionStartRef.current;
-                    sectionStartRef.current = null;
-                  }
-                  const seconds = (ms: number) => Math.round(ms / 100) / 10; // 0.1s precision
-                  const subject = `RippleFind demo feedback`;
-                  const lines = [
-                    `Demo feedback`,
-                    `Invited: ${invitedFirstName ?? ''}`,
-                    `Date: ${new Date().toISOString()}`,
-                    `Section: What Now`,
-                    `Time on section: ${seconds(sectionTotalMsRef.current)}s`,
-                    `Sidebar opened: ${sidebarOpenCountRef.current}x`,
-                    `Sidebar hover count: ${sidebarHoverCountRef.current}x`,
-                    `Sidebar total open time: ${seconds(sidebarTotalMsRef.current)}s`,
-                    `End-of-demo clicked: ${endDemoClickedAtRef.current ? 'yes' : 'no'}`,
-                    `User agent: ${navigator.userAgent}`,
-                    ``,
-                    `Your comments:`
-                  ];
-                  const body = encodeURIComponent(lines.join('\n'));
-                  window.location.href = `mailto:mikehelm@gmail.com?subject=${encodeURIComponent(subject)}&body=${body}`;
-                }}
-                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Send feedback email
-              </button>
+            
+
+            {/* Copy alternative (frozen at CTA click) */}
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Please copy and send these results back to me:</span>
+                <button
+                  onClick={async () => {
+                    try {
+                      const text = frozenPreviewText ?? buildReportSnapshot(Date.now(), 'Time on section');
+                      if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(text);
+                      } else {
+                        // Fallback for older browsers
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        ta.style.position = 'fixed';
+                        ta.style.left = '-9999px';
+                        document.body.appendChild(ta);
+                        ta.focus();
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                      }
+                      setCopyStatus('copied');
+                      setTimeout(() => setCopyStatus('idle'), 2000);
+                    } catch (e) {
+                      setCopyStatus('error');
+                      setTimeout(() => setCopyStatus('idle'), 2000);
+                    }
+                  }}
+                  className={`px-3 py-1.5 rounded text-sm ${copyStatus === 'copied' ? 'bg-green-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+                >
+                  {copyStatus === 'copied' ? 'Copied!' : copyStatus === 'error' ? 'Copy failed' : 'Copy'}
+                </button>
+              </div>
+              <pre className="text-xs whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded p-3 text-gray-800 dark:text-gray-200 max-h-56 overflow-auto">
+{frozenPreviewText ?? buildReportSnapshot(Date.now(), 'Time on section')}
+              </pre>
             </div>
           </div>
         </div>
@@ -532,7 +584,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
           </h1>
           
           <Button 
-            onClick={handleStartRipple}
+            onClick={() => handleStartRipple('main')}
             className="bg-white text-blue-600 hover:bg-gray-50 font-bold px-12 py-6 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 text-xl"
           >
             Start Your Ripple
@@ -548,7 +600,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
 
       {/* Right Arrow Button */}
       <button
-        onClick={handleStartRipple}
+        onClick={() => handleStartRipple('floater')}
         className={`fixed right-8 top-1/2 transform -translate-y-1/2 z-50 transition-all duration-500 ${
           showPanel && !isSliding ? 'opacity-100' : 'opacity-0 pointer-events-none'
         } ${isSliding ? '-translate-x-full' : 'translate-x-0'}`}
