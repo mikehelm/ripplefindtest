@@ -22,6 +22,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [isMouseOverSidebar, setIsMouseOverSidebar] = useState(false);
   const [showInfoPopup, setShowInfoPopup] = useState(false);
+  const tabRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -33,46 +34,6 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
     
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  // Close popup and handle outside clicks
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      // Close popup if clicking outside
-      if (showInfoPopup) {
-        const popup = document.querySelector('.info-popup');
-        if (popup && !popup.contains(e.target as Node)) {
-          setShowInfoPopup(false);
-          // Reopen sidebar if it was closed
-          if (!isPanelOpen) {
-            setIsPanelOpen(true);
-          }
-        }
-      }
-      
-      // Close sidebar on outside click (mobile only)
-      if (isMobile && isPanelOpen && panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        setIsPanelOpen(false);
-      }
-    };
-
-    // Close popup on Escape key
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && showInfoPopup) {
-        setShowInfoPopup(false);
-        if (!isPanelOpen) {
-          setIsPanelOpen(true);
-        }
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [showInfoPopup, isPanelOpen, isMobile]);
 
   // Scroll isolation for sidebar
   useEffect(() => {
@@ -174,18 +135,30 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
     }
   };
 
+  // Helper: close info popup and re-open sidebar (if visible)
+  const closeInfoPopup = () => {
+    setShowInfoPopup(false);
+    // Re-open sidebar when popup closes to restore context
+    setIsPanelOpen(true);
+  };
+
   const handleClickOutside = useCallback((e: MouseEvent) => {
-    if (isMobile && panelRef.current && !panelRef.current.contains(e.target as Node)) {
+    // Do not auto-close sidebar while info popup is open; popup handles its own clicks
+    if (showInfoPopup) return;
+    const target = e.target as Node;
+    const clickedInsidePanel = panelRef.current?.contains(target);
+    const clickedOnTab = tabRef.current?.contains(target);
+    if (!clickedInsidePanel && !clickedOnTab) {
       setIsPanelOpen(false);
     }
-  }, [isMobile]);
+  }, [showInfoPopup]);
 
   useEffect(() => {
-    if (isMobile && isPanelOpen) {
+    if (isPanelOpen) {
       document.addEventListener('click', handleClickOutside);
       return () => document.removeEventListener('click', handleClickOutside);
     }
-  }, [isMobile, isPanelOpen, handleClickOutside]);
+  }, [isPanelOpen, handleClickOutside]);
 
   return (
     <div>
@@ -337,6 +310,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
             showPanel ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
           onTouchStart={handleTouchStart}
+          ref={tabRef}
         >
           <div className="flex flex-col items-center justify-center h-full space-y-2">
             {/* Vertical text */}
@@ -359,10 +333,10 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
 
       {/* Info Popup */}
       {showInfoPopup && (
-        <div className="info-popup fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-lg w-full shadow-2xl border border-gray-200 dark:border-gray-700 relative">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4" onClick={closeInfoPopup}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-lg w-full shadow-2xl border border-gray-200 dark:border-gray-700 relative" onClick={(e) => e.stopPropagation()}>
             <button
-              onClick={() => setShowInfoPopup(false)}
+              onClick={closeInfoPopup}
               className="absolute top-4 right-4 w-8 h-8 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors"
             >
               <X className="w-4 h-4 text-gray-600 dark:text-gray-300" />
