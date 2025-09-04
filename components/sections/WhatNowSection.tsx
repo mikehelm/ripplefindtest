@@ -24,17 +24,40 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [isMouseOverSidebar, setIsMouseOverSidebar] = useState(false);
   const [showInfoPopup, setShowInfoPopup] = useState(false);
+  const [showDemoEnd, setShowDemoEnd] = useState(false);
   const tabRef = useRef<HTMLDivElement>(null);
+  
+  // Lightweight tracking (client-side only for mailto prefill)
+  const sectionStartRef = useRef<number | null>(null);
+  const sectionTotalMsRef = useRef<number>(0);
+  const sidebarOpenAtRef = useRef<number | null>(null);
+  const sidebarTotalMsRef = useRef<number>(0);
+  const sidebarOpenCountRef = useRef<number>(0);
+  const sidebarHoverCountRef = useRef<number>(0);
+  const endDemoClickedAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
+    // Start section timer
+    sectionStartRef.current = Date.now();
     
     checkMobile();
     window.addEventListener('resize', checkMobile);
     
-    return () => window.removeEventListener('resize', checkMobile);
+    // On unmount, finalize section duration and any open sidebar
+    return () => {
+      if (sectionStartRef.current) {
+        sectionTotalMsRef.current += Date.now() - sectionStartRef.current;
+        sectionStartRef.current = null;
+      }
+      if (sidebarOpenAtRef.current) {
+        sidebarTotalMsRef.current += Date.now() - sidebarOpenAtRef.current;
+        sidebarOpenAtRef.current = null;
+      }
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   // Scroll isolation for sidebar
@@ -76,6 +99,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
   // Handle mouse enter/leave for scroll isolation
   const handleSidebarMouseEnter = () => {
     setIsMouseOverSidebar(true);
+    sidebarHoverCountRef.current += 1;
     if (!isMobile) {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -148,8 +172,27 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
     };
   }, [showPanel, isMobile, isMouseOverSidebar]);
 
-  const handleStartRipple = () => {
+  // Track sidebar open/close durations
+  useEffect(() => {
+    if (isPanelOpen) {
+      // opening
+      if (!sidebarOpenAtRef.current) {
+        sidebarOpenAtRef.current = Date.now();
+        sidebarOpenCountRef.current += 1;
+      }
+    } else {
+      // closing
+      if (sidebarOpenAtRef.current) {
+        sidebarTotalMsRef.current += Date.now() - sidebarOpenAtRef.current;
+        sidebarOpenAtRef.current = null;
+      }
+    }
+  }, [isPanelOpen]);
 
+  const handleStartRipple = () => {
+    // For the demo, show an end-of-demo message
+    setShowDemoEnd(true);
+    endDemoClickedAtRef.current = Date.now();
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -354,6 +397,74 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
           </div>
         </div>
       </div>
+
+      {/* Demo End Popup */}
+      {showDemoEnd && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4" onClick={() => setShowDemoEnd(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-lg w-full shadow-2xl border border-gray-200 dark:border-gray-700 relative" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setShowDemoEnd(false)}
+              className="absolute top-4 right-4 w-8 h-8 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+            </button>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">End of Demo</h3>
+            <div className="space-y-4 text-gray-700 dark:text-gray-300">
+              <p>You’ve reached the end of this demo. This is just a test build.</p>
+              <p>
+                Click the button below to open your email with a pre-filled message that includes the test info we collected on this page (like how long you viewed this section and sidebar activity). You can review or edit it before sending.
+              </p>
+              <p>
+                Prefer to write your own? Email us at{' '}
+                <a href="mailto:mikehelm@gmail.com" className="text-blue-600 dark:text-blue-400 underline">mikehelm@gmail.com</a>.
+              </p>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowDemoEnd(false)}
+                className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  // finalize sidebar timing if still open
+                  if (sidebarOpenAtRef.current) {
+                    sidebarTotalMsRef.current += Date.now() - sidebarOpenAtRef.current;
+                    sidebarOpenAtRef.current = null;
+                  }
+                  if (sectionStartRef.current) {
+                    sectionTotalMsRef.current += Date.now() - sectionStartRef.current;
+                    sectionStartRef.current = null;
+                  }
+                  const seconds = (ms: number) => Math.round(ms / 100) / 10; // 0.1s precision
+                  const subject = `RippleFind demo feedback`;
+                  const lines = [
+                    `Demo feedback`,
+                    `Invited: ${invitedFirstName ?? ''}`,
+                    `Date: ${new Date().toISOString()}`,
+                    `Section: What Now`,
+                    `Time on section: ${seconds(sectionTotalMsRef.current)}s`,
+                    `Sidebar opened: ${sidebarOpenCountRef.current}x`,
+                    `Sidebar hover count: ${sidebarHoverCountRef.current}x`,
+                    `Sidebar total open time: ${seconds(sidebarTotalMsRef.current)}s`,
+                    `End-of-demo clicked: ${endDemoClickedAtRef.current ? 'yes' : 'no'}`,
+                    `User agent: ${navigator.userAgent}`,
+                    ``,
+                    `Your comments:`
+                  ];
+                  const body = encodeURIComponent(lines.join('\n'));
+                  window.location.href = `mailto:mikehelm@gmail.com?subject=${encodeURIComponent(subject)}&body=${body}`;
+                }}
+                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Send feedback email
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Info Popup */}
       {showInfoPopup && (
