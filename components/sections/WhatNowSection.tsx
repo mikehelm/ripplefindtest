@@ -531,38 +531,62 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-lg w-full shadow-2xl border border-gray-200 dark:border-gray-700 relative" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={closeInfoPopup}
-              className="absolute top-4 right-4 w-8 h-8 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors"
+              className="absolute top-4 right-4 w-10 h-10 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors"
             >
-              <X className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              <X className="w-4.5 h-4.5 text-gray-600 dark:text-gray-300" />
             </button>
             
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">How This Works</h3>
             
-            <div className="space-y-4 text-gray-700 dark:text-gray-300">
-              <p>
-                When founders connect through our platform and build successful companies, we earn a 1-2% equity stake for facilitating that crucial introduction.
-              </p>
-              
-              <p>
-                We share 50% of our equity with the 5 people in the referral chain that led to this connection. In this example, we earned 2%, so we share 1% of the company.
-              </p>
-              
-              <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{invitedFirstName ? `Your Distance Matters, ${invitedFirstName}:` : 'Your Distance Matters:'}</h4>
-                <ul className="space-y-1 text-sm">
-                  <li>• <strong>Direct referral:</strong> 20% of our 1% = 0.2% ownership</li>
-                  <li>• <strong>2nd degree:</strong> 10% of our 1% = 0.1% ownership</li>
-                  <li>• <strong>3rd degree:</strong> 5% of our 1% = 0.05% ownership</li>
-                  <li>• <strong>4th degree:</strong> 3% of our 1% = 0.03% ownership</li>
-                  <li>• <strong>5th degree:</strong> 2% of our 1% = 0.02% ownership</li>
-                  <li className="pt-2 border-t border-blue-200 dark:border-blue-700">• <strong>Affiliates/Influencers:</strong> 10% set aside for special partnerships</li>
-                </ul>
+            <div className="space-y-5 text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p>When a founder find a co-founder through a ripple, we earn 1 to 2% for that crucial introduction.</p>
+              <p>We share 50% of our share with the system. If you are one of the five people involved you earn.</p>
+
+              <div className="rounded-lg border border-blue-300/30 bg-blue-900/20 p-4">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{invitedFirstName ? `Your Distance Matters, ${invitedFirstName}` : 'Your Distance Matters'}</h4>
+                <div className="grid grid-cols-3 gap-x-3 text-sm">
+                  <div className="font-semibold text-gray-800 dark:text-gray-200">Level</div>
+                  <div className="text-right font-semibold text-gray-800 dark:text-gray-200">Share of 1%</div>
+                  <div className="text-right font-semibold text-gray-800 dark:text-gray-200">Ownership</div>
+
+                  <div className="col-span-3 h-px bg-blue-200/40 dark:bg-blue-700/40 my-1"></div>
+
+                  <div className="py-2">Direct</div>
+                  <div className="py-2 text-right">20%</div>
+                  <div className="py-2 text-right">0.20%</div>
+
+                  <div className="col-span-3 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
+
+                  <div className="py-2">2nd</div>
+                  <div className="py-2 text-right">10%</div>
+                  <div className="py-2 text-right">0.10%</div>
+
+                  <div className="col-span-3 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
+
+                  <div className="py-2">3rd</div>
+                  <div className="py-2 text-right">5%</div>
+                  <div className="py-2 text-right">0.05%</div>
+
+                  <div className="col-span-3 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
+
+                  <div className="py-2">4th</div>
+                  <div className="py-2 text-right">3%</div>
+                  <div className="py-2 text-right">0.03%</div>
+
+                  <div className="col-span-3 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
+
+                  <div className="py-2">5th</div>
+                  <div className="py-2 text-right">2%</div>
+                  <div className="py-2 text-right">0.02%</div>
+
+                  <div className="col-span-3 h-px bg-blue-200/40 dark:bg-blue-700/40 mt-2"></div>
+                  <div className="col-span-3 text-xs text-gray-600 dark:text-gray-300 pt-2">Affiliates/Influencers: 10% set aside for special partnerships</div>
+                </div>
               </div>
-              
+
               <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg border-l-4 border-yellow-400">
                 <p className="font-semibold text-gray-900 dark:text-white">
-                  The Example assumed you&apos;re 5 degrees away. 
-                  If you were the direct referrer, your share would be $40 million!
+                  Our example assumed you were 5 degrees away. If you were the direct, your share would be $40 million!
                 </p>
               </div>
             </div>
