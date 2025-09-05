@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Info } from 'lucide-react';
 
 interface WhoCaresProps {
@@ -7,6 +8,13 @@ interface WhoCaresProps {
 }
 
 export function WhoCaresSection({ onTitleClick }: WhoCaresProps) {
+  const [eyeClicked, setEyeClicked] = useState(false);
+
+  const handleOpenInfo = () => {
+    window.dispatchEvent(new Event('ripple:openInfo'));
+    setEyeClicked(true);
+  };
+
   return (
     <section id="who-cares-section" className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900 z-10 pt-16 pb-32">
       <div className="max-w-4xl mx-auto text-center section-reveal -mt-8">
@@ -31,9 +39,9 @@ export function WhoCaresSection({ onTitleClick }: WhoCaresProps) {
           <div className="relative inline-block">
             <p className="text-xl font-bold bg-yellow-200 dark:bg-yellow-300 text-gray-900 dark:text-gray-800 px-3 py-1 rounded-lg inline-block">You could own a piece of multiple startups</p>
             <button
-              onClick={() => window.dispatchEvent(new Event('ripple:openInfo'))}
+              onClick={handleOpenInfo}
               aria-label="How this works"
-              className="absolute top-1/2 -translate-y-1/2 -right-14 w-10 h-10 rounded-full flex items-center justify-center bg-blue-600 text-white shadow-lg ring-4 ring-blue-400/40 hover:ring-blue-400/70 hover:bg-blue-700 transition-all duration-300 animate-pulse"
+              className={`absolute top-1/2 -translate-y-1/2 -right-14 w-10 h-10 rounded-full flex items-center justify-center bg-blue-600 text-white transition-all duration-200 hover:bg-blue-700 ${eyeClicked ? 'shadow-md' : 'shadow-lg ring-2 ring-blue-300/30 hover:ring-blue-400/40'}`}
             >
               <Info className="w-5 h-5" />
             </button>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Info } from 'lucide-react';
 
 interface FirstThingSectionProps {
@@ -7,6 +8,13 @@ interface FirstThingSectionProps {
 }
 
 export function FirstThingSection({ onTitleClick }: FirstThingSectionProps) {
+  const [eyeClicked, setEyeClicked] = useState(false);
+
+  const handleOpenInfo = () => {
+    window.dispatchEvent(new Event('ripple:openInfo'));
+    setEyeClicked(true); // stop any glow after first click
+  };
+
   return (
     <section id="first-thing-section" className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 z-10 pt-16 pb-32" style={{ backgroundColor: '#0D1A3E' }}>
       <div className="max-w-4xl mx-auto text-center section-reveal -mt-8">
@@ -30,9 +38,9 @@ export function FirstThingSection({ onTitleClick }: FirstThingSectionProps) {
 
           {/* Big glowing eye button bottom-right to open How This Works */}
           <button
-            onClick={() => window.dispatchEvent(new Event('ripple:openInfo'))}
+            onClick={handleOpenInfo}
             aria-label="How this works"
-            className="absolute bottom-3 right-3 w-12 h-12 rounded-full flex items-center justify-center bg-blue-600 text-white shadow-xl ring-4 ring-blue-400/40 hover:ring-blue-400/70 hover:bg-blue-700 transition-all duration-300 animate-pulse"
+            className={`absolute bottom-3 right-3 w-12 h-12 rounded-full flex items-center justify-center bg-blue-600 text-white transition-all duration-200 hover:bg-blue-700 ${eyeClicked ? 'shadow-md' : 'shadow-lg ring-2 ring-blue-300/30 hover:ring-blue-400/40'}`}
           >
             <Info className="w-6 h-6" />
           </button>
