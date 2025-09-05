@@ -547,7 +547,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
               <p>Rewards are distributed across the first five connections in the chain.</p>
 
               <div className="rounded-lg border border-blue-300/30 bg-blue-900/20 p-4">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{invitedFirstName ? `Your Distance Matters, ${invitedFirstName}` : 'Your Distance Matters'}</h4>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">How Rewards Are Shared</h4>
                 <div className="grid grid-cols-2 gap-x-3 text-sm">
                   <div className="font-semibold text-gray-800 dark:text-gray-200">Level</div>
                   <div className="text-right font-semibold text-gray-800 dark:text-gray-200">Share of Our Stake</div>
@@ -579,13 +579,14 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
 
                   <div className="col-span-2 h-px bg-blue-200/40 dark:bg-blue-700/40 mt-2"></div>
                   <div className="col-span-2 text-xs text-gray-600 dark:text-gray-300 pt-2">Percentages shown are the portion of our equity share that you earn at each distance.</div>
-                  <div className="col-span-2 text-xs text-gray-700 dark:text-gray-200 pt-2 font-medium">Separate pool: 10% of total rewards reserved for affiliates/influencers.</div>
                 </div>
               </div>
 
               <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg border-l-4 border-yellow-400">
                 <p className="font-semibold text-gray-900 dark:text-white">
-                  This example assumes you&apos;re 5 degrees away. If you referred directly, your share would be 0.2% — worth $40M in this example.
+                  <a href="/affiliates-apply" target="_blank" rel="noopener noreferrer" className="underline decoration-yellow-600/70 underline-offset-2 hover:decoration-yellow-600">
+                    Separate pool: 10% of our share is reserved for affiliates and influencers. Click to apply.
+                  </a>
                 </p>
               </div>
             </div>
