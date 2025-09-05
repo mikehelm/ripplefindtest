@@ -538,7 +538,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
             
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">How This Works</h3>
             <p className="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed">
-              We help Founders wanting to build a company find co-founders that want to join their vision for some ownership.
+              We help founders wanting to build a company find co-founders that want to join their vision for some ownership.
             </p>
             
             <div className="space-y-5 text-gray-700 dark:text-gray-300 leading-relaxed">
