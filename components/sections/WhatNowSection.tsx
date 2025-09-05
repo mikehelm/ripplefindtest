@@ -536,60 +536,56 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
               <X className="w-4.5 h-4.5 text-gray-600 dark:text-gray-300" />
             </button>
             
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Founder Matching Limited</h3>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 text-center">Founder Matching Limited</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-5 text-center">What we do and how we compensate you</p>
             <p className="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed">
               We help founders wanting to build a company find co-founders that want to join their vision for some ownership.
             </p>
             
             <div className="space-y-5 text-gray-700 dark:text-gray-300 leading-relaxed">
-              <p>When a founder finds a co-founder through a ripple, we earn 1 to 2% for that crucial introduction.</p>
-              <p>We share 50% of our share with the system. If you are one of the five people involved you earn.</p>
+              <p>When a match happens, we earn 1–2% equity. We share half of that with the people in the referral chain.</p>
+              <p>We pay out across the first five connections in the chain.</p>
 
               <div className="rounded-lg border border-blue-300/30 bg-blue-900/20 p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{invitedFirstName ? `Your Distance Matters, ${invitedFirstName}` : 'Your Distance Matters'}</h4>
-                <div className="grid grid-cols-3 gap-x-3 text-sm">
+                <div className="grid grid-cols-2 gap-x-3 text-sm">
                   <div className="font-semibold text-gray-800 dark:text-gray-200">Level</div>
-                  <div className="text-right font-semibold text-gray-800 dark:text-gray-200">Share of 1%</div>
-                  <div className="text-right font-semibold text-gray-800 dark:text-gray-200">Ownership</div>
+                  <div className="text-right font-semibold text-gray-800 dark:text-gray-200">Share of Our Stake</div>
 
-                  <div className="col-span-3 h-px bg-blue-200/40 dark:bg-blue-700/40 my-1"></div>
+                  <div className="col-span-2 h-px bg-blue-200/40 dark:bg-blue-700/40 my-1"></div>
 
                   <div className="py-2">Direct</div>
                   <div className="py-2 text-right">20%</div>
-                  <div className="py-2 text-right">0.20%</div>
 
-                  <div className="col-span-3 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
+                  <div className="col-span-2 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
 
                   <div className="py-2">2nd</div>
                   <div className="py-2 text-right">10%</div>
-                  <div className="py-2 text-right">0.10%</div>
 
-                  <div className="col-span-3 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
+                  <div className="col-span-2 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
 
                   <div className="py-2">3rd</div>
                   <div className="py-2 text-right">5%</div>
-                  <div className="py-2 text-right">0.05%</div>
 
-                  <div className="col-span-3 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
+                  <div className="col-span-2 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
 
                   <div className="py-2">4th</div>
                   <div className="py-2 text-right">3%</div>
-                  <div className="py-2 text-right">0.03%</div>
 
-                  <div className="col-span-3 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
+                  <div className="col-span-2 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
 
                   <div className="py-2">5th</div>
                   <div className="py-2 text-right">2%</div>
-                  <div className="py-2 text-right">0.02%</div>
 
-                  <div className="col-span-3 h-px bg-blue-200/40 dark:bg-blue-700/40 mt-2"></div>
-                  <div className="col-span-3 text-xs text-gray-600 dark:text-gray-300 pt-2">Affiliates/Influencers: 10% set aside for special partnerships</div>
+                  <div className="col-span-2 h-px bg-blue-200/40 dark:bg-blue-700/40 mt-2"></div>
+                  <div className="col-span-2 text-xs text-gray-600 dark:text-gray-300 pt-2">Percentages shown are the portion of our equity share that you earn at each distance.</div>
+                  <div className="col-span-2 text-xs text-gray-700 dark:text-gray-200 pt-2 font-medium">Separate pool: 10% of total rewards reserved for affiliates/influencers.</div>
                 </div>
               </div>
 
               <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg border-l-4 border-yellow-400">
                 <p className="font-semibold text-gray-900 dark:text-white">
-                  This example assumes you&apos;re 5 degrees away. If you were the direct referrer, your share would be $40 million!
+                  This example assumes you&apos;re 5 degrees away. If you referred directly, your share would be 0.2% — worth $40M in this example.
                 </p>
               </div>
             </div>
