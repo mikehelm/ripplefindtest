@@ -19,7 +19,6 @@ export default function AffiliatesApplyPage() {
     averageMetrics: "",
     proposal: "",
     complianceNotes: "",
-    payoutPreference: "",
     otherNotes: "",
   });
   const [copied, setCopied] = useState<"idle" | "ok" | "err">("idle");
@@ -54,7 +53,6 @@ export default function AffiliatesApplyPage() {
       `Average campaign metrics (CTR, CVR, views, etc.): ${form.averageMetrics}`,
       `Your proposal (how you’d promote Founder Matching; timeline, deliverables):\n${form.proposal}`,
       `Compliance, disclosures, and restrictions: ${form.complianceNotes}`,
-      `Payout preference (e.g., rev share, CPA, flat fee + upside): ${form.payoutPreference}`,
       `Other notes: ${form.otherNotes}`,
     ];
     return encodeURIComponent(lines.join("\n"));
@@ -112,7 +110,6 @@ export default function AffiliatesApplyPage() {
           <Section title="Your Proposal">
             <TextArea required label="How you’d promote Founder Matching (timeline, deliverables)" value={form.proposal} onChange={onChange("proposal")} placeholder="Outline the concept, deliverables, timeline, targeting, and success criteria." />
             <TextArea label="Compliance, disclosures, restrictions" value={form.complianceNotes} onChange={onChange("complianceNotes")} placeholder="Regional restrictions, sponsored disclosure process, privacy/brand safety notes…" />
-            <Input label="Payout preference" value={form.payoutPreference} onChange={onChange("payoutPreference")} placeholder="Rev share, CPA, flat fee + upside, or suggestions" />
             <TextArea label="Other notes" value={form.otherNotes} onChange={onChange("otherNotes")} placeholder="Anything else we should know" />
           </Section>
 
