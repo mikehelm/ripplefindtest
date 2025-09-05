@@ -536,13 +536,13 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
               <X className="w-4.5 h-4.5 text-gray-600 dark:text-gray-300" />
             </button>
             
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">How This Works</h3>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Founder Matching Limited</h3>
             <p className="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed">
               We help founders wanting to build a company find co-founders that want to join their vision for some ownership.
             </p>
             
             <div className="space-y-5 text-gray-700 dark:text-gray-300 leading-relaxed">
-              <p>When a founder find a co-founder through a ripple, we earn 1 to 2% for that crucial introduction.</p>
+              <p>When a founder finds a co-founder through a ripple, we earn 1 to 2% for that crucial introduction.</p>
               <p>We share 50% of our share with the system. If you are one of the five people involved you earn.</p>
 
               <div className="rounded-lg border border-blue-300/30 bg-blue-900/20 p-4">
