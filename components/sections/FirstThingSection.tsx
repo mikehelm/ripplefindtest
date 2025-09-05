@@ -1,5 +1,7 @@
 'use client';
 
+import { Info } from 'lucide-react';
+
 interface FirstThingSectionProps {
   onTitleClick?: () => void;
 }
@@ -16,14 +18,24 @@ export function FirstThingSection({ onTitleClick }: FirstThingSectionProps) {
           YOU SHOULD KNOW.
         </h2>
         
+        {/* White info container with a contextual eye button */}
         <div 
-          className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-8 border-2 border-gray-200 dark:border-gray-700 max-w-2xl mx-auto shadow-lg"
+          className="relative bg-white dark:bg-gray-800 rounded-2xl px-4 py-8 border-2 border-gray-200 dark:border-gray-700 max-w-2xl mx-auto shadow-lg"
         >
           <div className="supporting-text section-text text-gray-700 dark:text-gray-300 leading-snug">
             <p className="mb-2">No credit card | Nothing to buy | Not MLM</p>
             <p className="mb-2">Just an opportunity to own a &apos;piece&apos; of something <span className="big-glow-text">big</span></p>
             <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">by helping founders find co-founders</p>
           </div>
+
+          {/* Big glowing eye button bottom-right to open How This Works */}
+          <button
+            onClick={() => window.dispatchEvent(new Event('ripple:openInfo'))}
+            aria-label="How this works"
+            className="absolute bottom-3 right-3 w-12 h-12 rounded-full flex items-center justify-center bg-blue-600 text-white shadow-xl ring-4 ring-blue-400/40 hover:ring-blue-400/70 hover:bg-blue-700 transition-all duration-300 animate-pulse"
+          >
+            <Info className="w-6 h-6" />
+          </button>
         </div>
       </div>
     </section>

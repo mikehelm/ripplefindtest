@@ -295,6 +295,15 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
     }
   }, [isPanelOpen, handleClickOutside]);
 
+  // Allow other sections to trigger this section's Info popup via a global custom event
+  useEffect(() => {
+    const openInfo = () => {
+      setShowInfoPopup(true);
+    };
+    window.addEventListener('ripple:openInfo', openInfo as EventListener);
+    return () => window.removeEventListener('ripple:openInfo', openInfo as EventListener);
+  }, []);
+
   return (
     <div>
       {/* Example Panel */}
@@ -374,7 +383,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
                 </li>
                 <li className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  {invitedFirstName ? `${invitedFirstName}, you\u2019re five steps away` : `You\u2019re five steps away`}
+                  {invitedFirstName ? `${invitedFirstName}, you're five steps away` : `You're five steps away`}
                 </li>
                 <li className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
@@ -382,7 +391,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
                 </li>
                 <li className="flex items-start">
                   <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                  That\u2019s 0.04% ownership.
+                  That&rsquo;s 0.04% ownership.
                 </li>
               </ul>
             </div>
@@ -394,9 +403,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
                 <div className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-1">Your share:</div>
                 <div className="text-blue-600 dark:text-blue-400">$4 million</div>
               </div>
-              <p className="text-gray-700 dark:text-gray-300 mt-2">
-              Please click <strong>Copy</strong> below and send the results back to me. Thank you!
-            </p>
+              {/* Instruction text intentionally removed from sidebar; it only appears in the popup */}
             </div>
 
             {/* Divider */}

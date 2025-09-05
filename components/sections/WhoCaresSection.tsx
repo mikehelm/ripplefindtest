@@ -1,5 +1,7 @@
 'use client';
 
+import { Info } from 'lucide-react';
+
 interface WhoCaresProps {
   onTitleClick?: () => void;
 }
@@ -25,7 +27,17 @@ export function WhoCaresSection({ onTitleClick }: WhoCaresProps) {
             </div>
           </div>
           
-          <p className="text-xl font-bold bg-yellow-200 dark:bg-yellow-300 text-gray-900 dark:text-gray-800 px-3 py-1 rounded-lg inline-block">You could own a piece of multiple startups</p>
+          {/* Yellow callout with an eye just outside to the right */}
+          <div className="relative inline-block">
+            <p className="text-xl font-bold bg-yellow-200 dark:bg-yellow-300 text-gray-900 dark:text-gray-800 px-3 py-1 rounded-lg inline-block">You could own a piece of multiple startups</p>
+            <button
+              onClick={() => window.dispatchEvent(new Event('ripple:openInfo'))}
+              aria-label="How this works"
+              className="absolute top-1/2 -translate-y-1/2 -right-14 w-10 h-10 rounded-full flex items-center justify-center bg-blue-600 text-white shadow-lg ring-4 ring-blue-400/40 hover:ring-blue-400/70 hover:bg-blue-700 transition-all duration-300 animate-pulse"
+            >
+              <Info className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
     </section>
