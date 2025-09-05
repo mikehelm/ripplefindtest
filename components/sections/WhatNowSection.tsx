@@ -539,12 +539,12 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 text-center">Founder Matching Limited</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-5 text-center">What we do and how we compensate you</p>
             <p className="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed">
-              We help founders wanting to build a company find co-founders that want to join their vision for some ownership.
+              We help founders build companies by finding co-founders who share their vision and earn ownership.
             </p>
             
             <div className="space-y-5 text-gray-700 dark:text-gray-300 leading-relaxed">
-              <p>When a match happens, we earn 1–2% equity. We share half of that with the people in the referral chain.</p>
-              <p>We pay out across the first five connections in the chain.</p>
+              <p>When a match happens, we earn 1–2% equity and share 50% of that with the referral chain.</p>
+              <p>Rewards are distributed across the first five connections in the chain.</p>
 
               <div className="rounded-lg border border-blue-300/30 bg-blue-900/20 p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{invitedFirstName ? `Your Distance Matters, ${invitedFirstName}` : 'Your Distance Matters'}</h4>
