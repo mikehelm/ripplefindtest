@@ -537,9 +537,13 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
             </button>
             
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">How This Works</h3>
+            <p className="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed">
+              We help Founders wanting to build a company find co-founders that want to join their vision for some ownership.
+            </p>
             
             <div className="space-y-5 text-gray-700 dark:text-gray-300 leading-relaxed">
-              <p>We help Founders wanting to build a company find co-founders that want to join their vision for some ownership.</p>
+              <p>When a founder find a co-founder through a ripple, we earn 1 to 2% for that crucial introduction.</p>
+              <p>We share 50% of our share with the system. If you are one of the five people involved you earn.</p>
 
               <div className="rounded-lg border border-blue-300/30 bg-blue-900/20 p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{invitedFirstName ? `Your Distance Matters, ${invitedFirstName}` : 'Your Distance Matters'}</h4>
@@ -585,7 +589,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
 
               <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg border-l-4 border-yellow-400">
                 <p className="font-semibold text-gray-900 dark:text-white">
-                  Our example assumed you were 5 degrees away. If you were the direct, your share would be $40 million!
+                  This example assumes you&apos;re 5 degrees away. If you were the direct referrer, your share would be $40 million!
                 </p>
               </div>
             </div>
