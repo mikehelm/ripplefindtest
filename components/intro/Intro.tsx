@@ -1,15 +1,12 @@
 'use client';
-
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { SignInDialog } from '@/components/SignInDialog';
-import { useParams } from 'next/navigation';
-import { ParsedNames } from '@/lib/utils';
-import { InviteProvider } from '@/context/InviteContext';
+// Names are provided via props only; no URL parsing
+import HealthDot from '@/components/system/HealthDot';
 
 // Section Components
 import { TagSection } from '@/components/sections/TagSection';
@@ -18,15 +15,18 @@ import { FactSection } from '@/components/sections/FactSection';
 import { WhoCaresSection } from '@/components/sections/WhoCaresSection';
 import { WhyYouSection } from '@/components/sections/WhyYouSection';
 import { WhatNowSection } from '@/components/sections/WhatNowSection';
+import { RippleGrowSection } from '@/components/sections/RippleGrowSection';
+import { MicroFAQSection } from '@/components/sections/MicroFAQSection';
+import { FooterSection } from '@/components/sections/FooterSection';
 
 // Move sections array outside component to prevent recreation on every render
 const SECTIONS = [
-  'tag-section', 
+  'tag-section',
   'first-thing-section',
   'fact-section',
   'who-cares-section',
   'why-you-section',
-  'what-now-section'
+  'what-now-section',
 ];
 
 // Move function outside component and make it pure
@@ -34,20 +34,20 @@ const getSectionIndexFromScroll = (sections: string[]) => {
   const scrollY = window.scrollY;
   const windowHeight = window.innerHeight;
   const currentScrollCenter = scrollY + windowHeight / 2;
-  
+
   for (let i = 0; i < sections.length; i++) {
     const element = document.getElementById(sections[i]);
     if (element) {
       const rect = element.getBoundingClientRect();
       const elementTop = scrollY + rect.top;
       const elementBottom = elementTop + rect.height;
-      
+
       if (currentScrollCenter >= elementTop && currentScrollCenter <= elementBottom) {
         return i;
       }
     }
   }
-  return null;
+  return null; // Return null instead of currentSection to avoid state dependency
 };
 
 // Famous names list for cycling animation
@@ -65,23 +65,14 @@ const famousNames = [
   { name: 'Ha, you watched to the end?', color: 'text-purple-600' },
 ];
 
-// Helper function to capitalize the first letter of a string.
-const capitalizeFirstLetter = (str: string): string => {
-  if (!str) return '';
-  return str.charAt(0).toUpperCase() + str.slice(1);
+type IntroProps = {
+  inviterName?: string;
+  inviteeName?: string;
+  code?: string;
+  ctaHref?: string; // if provided, primary CTA should link here
 };
 
-// Helper function to format a URL slug (e.g., "john-doe" to "John Doe")
-const formatSlugToName = (slug: string): { firstName: string; lastName: string; fullName: string } => {
-  const parts = slug.split('-');
-  const firstName = capitalizeFirstLetter(parts[0]);
-  const lastName = parts.length > 1 ? capitalizeFirstLetter(parts.slice(1).join('-')) : '';
-  const fullName = `${firstName} ${lastName}`.trim();
-  return { firstName, lastName, fullName };
-};
-
-export default function DynamicLandingPage() {
-  const params = useParams();
+export default function Intro({ inviterName, inviteeName, code, ctaHref }: IntroProps) {
   const [currentSection, setCurrentSection] = useState(0);
   const [currentNameIndex, setCurrentNameIndex] = useState(0);
   const [isNameTransitioning, setIsNameTransitioning] = useState(false);
@@ -89,52 +80,25 @@ export default function DynamicLandingPage() {
   const [isFirstCycle, setIsFirstCycle] = useState(true);
   const [isScrolling, setIsScrolling] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const nameIntervalRef = useRef<NodeJS.Timeout>();
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>();
+  // Use browser-compatible timer types for client code
+  const nameTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nameIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
   const [isOnWhatNowSection, setIsOnWhatNowSection] = useState(false);
   const [shouldHideNav, setShouldHideNav] = useState(false);
-  
-  // Parse names from URL parameters and store in state for dynamic updates
-  const [displayNames, setDisplayNames] = useState<ParsedNames>(() => {
-    const defaultNames = {
-      inviterFirstName: 'Mike',
-      inviterLastName: 'Helm',
-      invitedFirstName: 'XXX',
-      invitedLastName: 'KAS-Angel',
-      inviterFullName: 'Mike Helm',
-      invitedFullName: 'XXX KAS-Angel',
-    };
 
-    if (!params?.names || !Array.isArray(params.names) || params.names.length !== 2) {
-      return defaultNames;
-    }
+  // No URL parsing; derive invited first/last from prop
+  const invitedFirstFromProp = inviteeName
+    ? inviteeName.split(' ')[0]
+    : 'Hey';
+  const invitedLastFromProp = inviteeName
+    ? (inviteeName.split(' ').slice(1).join(' ') || '')
+    : 'You';
+  const inviterFullName = inviterName || 'The Member';
+  const handleUseDemoNames = () => {};
 
-    const [inviterSlug, invitedSlug] = params.names;
-    const inviter = formatSlugToName(inviterSlug);
-    const invited = formatSlugToName(invitedSlug);
-
-    return {
-      inviterFirstName: inviter.firstName,
-      inviterLastName: inviter.lastName,
-      invitedFirstName: invited.firstName,
-      invitedLastName: invited.lastName,
-      inviterFullName: inviter.fullName,
-      invitedFullName: invited.fullName,
-    };
-  });
-  
-  const handleUseDemoNames = () => {
-    setDisplayNames({
-      inviterFirstName: 'Mike',
-      inviterLastName: 'Helm',
-      invitedFirstName: 'Graham',
-      invitedLastName: 'Brain',
-      inviterFullName: 'Mike Helm',
-      invitedFullName: 'Graham Brain',
-    });
-  };
-  
   // Use the constant sections array
   const sections = SECTIONS;
 
@@ -143,44 +107,44 @@ export default function DynamicLandingPage() {
     const handleWheel = (e: WheelEvent) => {
       // Only handle significant wheel movements
       if (Math.abs(e.deltaY) < 50) return;
-      
+
       // Get current section from actual scroll position
       const scrollY = window.scrollY;
       const windowHeight = window.innerHeight;
       let actualCurrentSection = 0;
-      
+
       // Find which section we're currently in
       for (let i = 0; i < SECTIONS.length; i++) {
         const element = document.getElementById(SECTIONS[i]);
         if (element) {
           const rect = element.getBoundingClientRect();
           const elementTop = scrollY + rect.top;
-          
+
           // If we're past the middle of this section, this is our current section
           if (scrollY >= elementTop - windowHeight / 2) {
             actualCurrentSection = i;
           }
         }
       }
-      
+
       // Prevent scrolling up from the "What Now?" section (last section)
       if (actualCurrentSection === SECTIONS.length - 1 && e.deltaY < 0) {
         e.preventDefault();
         return;
       }
-      
+
       // Determine direction and next section
       const direction = e.deltaY > 0 ? 1 : -1;
       const nextSection = Math.max(0, Math.min(SECTIONS.length - 1, actualCurrentSection + direction));
-      
+
       // Only scroll if we're going to a different section
       if (nextSection !== actualCurrentSection) {
         e.preventDefault();
-        
+
         const targetElement = document.getElementById(SECTIONS[nextSection]);
         if (targetElement) {
           targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          
+
           // Update state immediately
           setCurrentSection(nextSection);
         }
@@ -189,11 +153,11 @@ export default function DynamicLandingPage() {
 
     // Add event listener
     document.addEventListener('wheel', handleWheel);
-    
+
     return () => {
       document.removeEventListener('wheel', handleWheel);
     };
-  }, []);
+  }, []); // Remove sections dependency since we use SECTIONS constant
 
   // Track scroll position to update current section
   useEffect(() => {
@@ -202,7 +166,7 @@ export default function DynamicLandingPage() {
       if (actualSection !== null && actualSection !== currentSection) {
         setCurrentSection(actualSection);
       }
-      
+
       // Check if we're on the "what-now-section"
       const whatNowSection = document.getElementById('what-now-section');
       if (whatNowSection) {
@@ -229,11 +193,11 @@ export default function DynamicLandingPage() {
     })();
 
     window.addEventListener('scroll', throttledScroll);
-    
+
     return () => {
       window.removeEventListener('scroll', throttledScroll);
     };
-  }, [currentSection]);
+  }, [currentSection]); // Keep currentSection dependency for comparison
 
   // Name cycling effect
   useEffect(() => {
@@ -242,9 +206,14 @@ export default function DynamicLandingPage() {
     const startCycling = () => {
       const cycleNames = () => {
         setIsNameTransitioning(true);
-        
-        setTimeout(() => {
-          setCurrentNameIndex((prev) => {
+
+        // Clear any previous transition timeout
+        if (transitionTimeoutRef.current) {
+          clearTimeout(transitionTimeoutRef.current);
+        }
+
+        transitionTimeoutRef.current = setTimeout(() => {
+          setCurrentNameIndex((prev: number) => {
             const nextIndex = (prev + 1) % famousNames.length;
             if (nextIndex === 0) {
               setIsFirstCycle(false);
@@ -257,10 +226,11 @@ export default function DynamicLandingPage() {
 
       // First name shows for 6 seconds, then 4 seconds for each subsequent name
       const firstDelay = isFirstCycle ? 6000 : 4000;
-      
-      nameIntervalRef.current = setTimeout(() => {
+
+      // Use a timeout to delay the first cycle, then an interval for subsequent cycles
+      nameTimeoutRef.current = setTimeout(() => {
         cycleNames();
-        
+
         // Set up regular interval after first cycle
         nameIntervalRef.current = setInterval(cycleNames, 4000);
       }, firstDelay);
@@ -269,9 +239,17 @@ export default function DynamicLandingPage() {
     startCycling();
 
     return () => {
+      if (nameTimeoutRef.current) {
+        clearTimeout(nameTimeoutRef.current);
+        nameTimeoutRef.current = null;
+      }
       if (nameIntervalRef.current) {
-        clearTimeout(nameIntervalRef.current);
         clearInterval(nameIntervalRef.current);
+        nameIntervalRef.current = null;
+      }
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+        transitionTimeoutRef.current = null;
       }
     };
   }, [nameAnimationStarted, isFirstCycle]);
@@ -295,7 +273,7 @@ export default function DynamicLandingPage() {
           if (entry.isIntersecting) {
             // Add revealed class for animations
             entry.target.classList.add('revealed');
-            
+
             // Start name animation when fact section becomes visible
             if (entry.target.id === 'fact-section' && !nameAnimationStarted && entry.intersectionRatio > 0.3) {
               setNameAnimationStarted(true);
@@ -303,7 +281,7 @@ export default function DynamicLandingPage() {
           }
         });
       },
-      { threshold: 0.3 }
+      { threshold: 0.3 },
     );
 
     observerRef.current = observer;
@@ -311,15 +289,15 @@ export default function DynamicLandingPage() {
     // Wait for DOM to be ready, then observe sections
     const timer = setTimeout(() => {
       // Observe sections for animations only
-      SECTIONS.forEach(sectionId => {
+      SECTIONS.forEach((sectionId) => {
         const element = document.getElementById(sectionId);
         if (element) {
           observer.observe(element);
         }
       });
-      
+
       // Also observe elements with section-reveal class for animations
-      document.querySelectorAll('.section-reveal').forEach(el => {
+      document.querySelectorAll('.section-reveal').forEach((el) => {
         observer.observe(el);
       });
     }, 100);
@@ -328,7 +306,7 @@ export default function DynamicLandingPage() {
       clearTimeout(timer);
       observer.disconnect();
     };
-  }, [nameAnimationStarted]);
+  }, [nameAnimationStarted]); // Remove sections dependency since we use SECTIONS constant
 
   const handleArrowClick = () => {
     const actualCurrentSection = getSectionIndexFromScroll(SECTIONS);
@@ -339,13 +317,37 @@ export default function DynamicLandingPage() {
     }
   };
 
+  // Invitee name for headline: from props only; fallback "Hey You"
+
+  // Logo: use a single canonical asset from public/
+
   return (
-    <InviteProvider value={displayNames}>
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      {/* Affiliate Chip (optional) */}
+      {(inviterName || inviteeName) && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 12,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(16,16,16,0.85)',
+            color: '#fff',
+            padding: '8px 12px',
+            borderRadius: 999,
+            fontSize: 13,
+            zIndex: 70,
+            boxShadow: '0 6px 18px rgba(0,0,0,0.25)'
+          }}
+        >
+          Invited by <strong>{inviterName || 'a Founder Matching member'}</strong>
+          {inviteeName ? <span> · For <strong>{inviteeName}</strong></span> : null}
+        </div>
+      )}
       {/* Navigation */}
-      {/* Left Tab - Logo */}
-      <div className={`fixed top-0 left-4 z-50 transition-opacity duration-500 ${shouldHideNav ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-        <div 
+      {/* Left Tab - Logo (always visible, elevated z-index) */}
+      <div className={`fixed top-0 left-4 z-[60] pointer-events-auto transition-opacity duration-500 opacity-100`}>
+        <div
           className="bg-white dark:bg-gray-800 rounded-b-2xl px-4 py-2 shadow-2xl border-2 border-gray-200 dark:border-gray-700"
           onClick={() => {
             const firstSection = document.getElementById(SECTIONS[0]);
@@ -355,12 +357,31 @@ export default function DynamicLandingPage() {
           }}
         >
           <div className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-all duration-300 hover:scale-105">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-teal-500 rounded-full flex items-center justify-center">
-              <div className="w-6 h-6 bg-white rounded-full"></div>
+            <div className="relative inline-block" style={{ width: 48, height: 48 }}>
+              <img
+                src="/ripplefindlogo.png"
+                alt="RippleFind logo"
+                width={48}
+                height={48}
+                className="object-contain"
+              />
+              <HealthDot className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2" />
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-bold text-gray-900 dark:text-white leading-tight -ml-1">RippleFind</span>
-              <span className="text-xs font-light text-gray-500 dark:text-gray-400 leading-none mt-0.5">by Founder Matching</span>
+              <span className="text-lg font-bold text-gray-900 dark:text-white leading-snug -ml-1">RippleFind</span>
+              <span className="text-xs font-light text-gray-500 dark:text-gray-400 leading-snug mt-1">
+                by{' '}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.dispatchEvent(new Event('ripple:openInfo'));
+                  }}
+                  className="text-blue-600 dark:text-blue-400 underline hover:no-underline"
+                >
+                  Founder Matching
+                </button>
+              </span>
             </div>
           </div>
         </div>
@@ -388,9 +409,9 @@ export default function DynamicLandingPage() {
       <TagSection 
         onArrowClick={handleArrowClick} 
         onTitleClick={handleArrowClick}
-        inviterFullName={displayNames.inviterFullName}
-        invitedFirstName={displayNames.invitedFirstName}
-        invitedLastName={displayNames.invitedLastName}
+        inviterFullName={inviterFullName}
+        invitedFirstName={invitedFirstFromProp}
+        invitedLastName={invitedLastFromProp}
         onUseDemoNames={handleUseDemoNames}
       />
       <FirstThingSection onTitleClick={handleArrowClick} />
@@ -402,7 +423,7 @@ export default function DynamicLandingPage() {
       />
       <WhoCaresSection onTitleClick={handleArrowClick} />
       <WhyYouSection onTitleClick={handleArrowClick} />
-      <WhatNowSection onTitleClick={handleArrowClick} />
+      <WhatNowSection onTitleClick={handleArrowClick} ctaHref={ctaHref} />
 
       {/* Floating Scroll Arrow */}
       <button
@@ -415,6 +436,5 @@ export default function DynamicLandingPage() {
         </div>
       </button>
     </div>
-    </InviteProvider>
   );
 }

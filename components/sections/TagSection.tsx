@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { UserCheck, AlertTriangle, X } from 'lucide-react';
 import { WavesBackground } from '@/components/WavesBackground';
 import StarsBackground from '@/components/StarsBackground';
+ 
 
 interface TagSectionProps {
   onArrowClick: () => void;
@@ -21,6 +22,8 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
   const [bubblePosition, setBubblePosition] = useState({ top: 0, left: 0 });
   const [showInvalidLinkPopup, setShowInvalidLinkPopup] = useState(false);
   const [waveOffset, setWaveOffset] = useState(0);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [privacyFaded, setPrivacyFaded] = useState(false);
   const invitationCardRef = useRef<HTMLDivElement>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -48,12 +51,19 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
   }, [inviterFullName]);
 
   useEffect(() => {
-    // After name shows for 2 seconds, transition to YOU'RE IT
-    const transitionTimer = setTimeout(() => {
-      setAnimationState('youre-it');
-    }, 2000);
+    // First show the name for 1.5s, then slide in TAG from right
+    const nameTimer = setTimeout(() => {
+      setAnimationState('tag');
+      
+      // After showing TAG for 1.5s, show YOU'RE IT below it
+      const tagTimer = setTimeout(() => {
+        setAnimationState('youre-it');
+      }, 1500);
+      
+      return () => clearTimeout(tagTimer);
+    }, 1500);
 
-    return () => clearTimeout(transitionTimer);
+    return () => clearTimeout(nameTimer);
   }, []);
 
   // Debounced position calculation
@@ -89,6 +99,16 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
     };
   }, [calculatePosition, debouncedCalculatePosition]);
 
+  // Fade out the Privacy label as soon as the user starts scrolling
+  useEffect(() => {
+    const onScroll = () => {
+      setPrivacyFaded(window.scrollY > 10);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <section id="tag-section" className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-600 to-teal-600 dark:from-blue-800 dark:to-teal-800 overflow-hidden pt-16 pb-32">
       {/* Night sky stars (dark mode only) */}
@@ -99,19 +119,8 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
         zIndexClass="z-0" 
         onWaveUpdate={handleWaveUpdate} 
         baselineRatio={0.5}
-        bubbleOptions={{
-          enabled: true,
-          density: 3,           // not overwhelming
-          minRadius: 2,
-          maxRadius: 10,        // roughly letter height scale
-          speedMin: 40,
-          speedMax: 90,
-          fadeStartRatio: 0.35, // begin fading before halfway
-          maxHeightRatio: 0.5,  // disappear around halfway up
-          baseAlpha: 0.7,
-        }}
+        particleOptions={{ enabled: true }}
       />
-
       
 
       {/* Foreground content sits between middle and front waves */}
@@ -119,38 +128,42 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
         <div className="mb-12 hero-headline">
           <div className="relative h-44 flex items-center justify-center">
             {/* Static TAG Text - always visible */}
-            <div className="flex flex-col items-center">
-              <h1 
-                className="impact-title impact-text text-white cursor-pointer hover:text-blue-200 transition-all duration-300 mb-4"
-                onClick={onTitleClick}
-              >
-                TAG...
-              </h1>
-              
-              {/* Animated second line */}
-              <div className="relative h-24 flex items-center justify-center">
-                {/* User Name */}
-                <h1 
-                  className={`absolute left-1/2 -translate-x-1/2 impact-title impact-text text-white cursor-pointer hover:text-blue-200 transition-all duration-500 ease-in ${
-                    animationState === 'name' ? 'opacity-100' :
-                    animationState === 'youre-it' ? 'opacity-0 transform translate-x-full' : 'opacity-0 transform -translate-x-full'
-                  }`}
-                  onClick={onTitleClick}
-                >
-                  {invitedFirstName !== 'The' ? invitedFirstName : ''} {/* Dynamic: Uses invitedFirstName from URL, but shows nothing if it's the default "The" */}
-                </h1>
+              <div className="flex flex-col items-center">
+                {/* First line - Name slides out left, TAG slides in from right */}
+                <div className="h-24 flex items-center justify-center">
+                  {/* User Name - Slides out to the left */}
+                  <h1 
+                    className={`absolute impact-title impact-text text-white cursor-pointer hover:text-blue-200 transition-all duration-700 ease-in-out ${
+                      animationState === 'name' ? 'opacity-100 translate-x-0' : 
+                      animationState === 'tag' ? 'opacity-0 -translate-x-20' : 'opacity-0 -translate-x-20'
+                    }`}
+                    onClick={onTitleClick}
+                  >
+                    {invitedFirstName !== 'The' ? invitedFirstName : ''}
+                  </h1>
 
-                {/* YOU'RE IT Text */}
+                  {/* TAG Text - Slides in from right, stays visible */}
+                  <h1 
+                    className={`absolute impact-title impact-text text-white cursor-pointer hover:text-blue-200 transition-all duration-700 ease-in-out ${
+                      animationState === 'name' ? 'opacity-0 translate-x-20' : 
+                      (animationState === 'tag' || animationState === 'youre-it') ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-20'
+                    }`}
+                    onClick={onTitleClick}
+                  >
+                    TAG...
+                  </h1>
+                </div>
+                
+                {/* YOU'RE IT Text - Slides in from bottom when in 'youre-it' state */}
                 <h1 
-                  className={`absolute left-1/2 -translate-x-1/2 impact-title impact-text text-white cursor-pointer hover:text-blue-200 transition-all duration-700 ease-out ${
-                    animationState === 'youre-it' ? 'opacity-100 animate-bounce-in' : 'opacity-0 transform -translate-x-full'
+                  className={`impact-title impact-text text-white cursor-pointer hover:text-blue-200 transition-all duration-700 ease-out ${
+                    animationState === 'youre-it' ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
                   }`}
                   onClick={onTitleClick}
                 >
                   {"YOU'RE"}
                   &nbsp;IT
                 </h1>
-              </div>
             </div>
           </div>
         </div>
@@ -160,8 +173,8 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
           <p className="text-lg text-blue-100 hero-cta opacity-90">
             <span className="text-xl font-bold text-white mb-2 block">
               {invitedFirstName && invitedFirstName !== 'The'
-                ? `${invitedFirstName}, you've been pulled into something HUGE!`
-                : "You've been pulled into something HUGE!"}
+                ? `${invitedFirstName}, you’ve been chosen for something huge`
+                : "you’ve been chosen for something huge"}
             </span>
           </p>
         </div>
@@ -210,6 +223,34 @@ export function TagSection({ onArrowClick, onTitleClick, inviterFullName, invite
         </p>
         {/* Arrow pointing down */}
         <div className="absolute top-full left-1/4 transform -translate-x-1/4 w-0 h-0 border-l-[16px] border-r-[16px] border-t-[16px] border-l-transparent border-r-transparent border-t-white drop-shadow-md"></div>
+      </div>
+
+      {/* Bottom-left Privacy with hover/tap popup */}
+      <div className={`absolute left-8 bottom-8 z-30 group select-none transition-opacity duration-200 ${privacyFaded ? 'opacity-0 pointer-events-none' : 'opacity-90'}` }>
+        <button
+          type="button"
+          aria-haspopup="dialog"
+          aria-expanded={showPrivacy}
+          onMouseEnter={() => setShowPrivacy(true)}
+          onMouseLeave={() => setShowPrivacy(false)}
+          onFocus={() => setShowPrivacy(true)}
+          onBlur={() => setShowPrivacy(false)}
+          onClick={() => setShowPrivacy((v) => !v)}
+          className="text-white/90 hover:text-white dark:text-white/90 dark:hover:text-white text-sm font-medium tracking-wide"
+        >
+          Privacy
+        </button>
+        {/* Popup */}
+        <div
+          className={`absolute left-0 -top-2 translate-y-[-100%] mb-2 w-96 max-w-[95vw] rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 text-sm p-3 leading-relaxed transition-opacity duration-200 ${
+            showPrivacy ? 'opacity-100' : 'opacity-0'
+          } group-hover:opacity-100`}
+          role="dialog"
+        >
+          <p>You’re seeing this because a friend invited you.</p>
+          <p className="mt-1">We never sell or share your info; this invitation comes only through trusted connections.</p>
+          <p className="mt-2">Your email is safe, private, and never shown to anyone else beyond Founder Matching Services.</p>
+        </div>
       </div>
     </section>
   );

@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowIcon } from '../ui/arrow-icon';
-import { Rocket } from 'lucide-react';
+import { Rocket, Info } from 'lucide-react';
 
 interface WhyYouSectionProps {
   onTitleClick?: () => void;
@@ -21,8 +21,7 @@ export function WhyYouSection({ onTitleClick }: WhyYouSectionProps) {
         <div className="supporting-text section-text text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">          
           <p className="mb-1">You&apos;re now part of a ripple that can reach anyone on Earth.</p>
           
-          <p className="mb-1">Because it&apos;s not who you know...</p>
-          <p className="mb-8">it&apos;s who they know!</p>
+          <p className="mb-8">Because it&apos;s not who you know... it&apos;s who they know!</p>
           
           {/* Visual Flow Progression Card */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-8 border-2 border-gray-200 dark:border-gray-700 max-w-2xl mx-auto shadow-lg">
@@ -36,7 +35,6 @@ export function WhyYouSection({ onTitleClick }: WhyYouSectionProps) {
                     </div>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mt-3">You Share</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Start the ripple</p>
                 </div>
                 
                 {/* Arrow 1 */}
@@ -54,7 +52,6 @@ export function WhyYouSection({ onTitleClick }: WhyYouSectionProps) {
                     </div>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mt-3">They Share</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Ripple expands</p>
                 </div>
                 
                 {/* Arrow 2 */}
@@ -75,9 +72,18 @@ export function WhyYouSection({ onTitleClick }: WhyYouSectionProps) {
           </div>
         </div>
         
-        <p className="text-xl font-medium text-gray-600 dark:text-gray-400 text-center mt-8 italic">
-          Anyone can help founders find their first teammates.
-        </p>
+        <div className="relative inline-block mt-8">
+          <p className="text-xl font-medium text-gray-600 dark:text-gray-400 text-center italic">
+            This spreads only through trusted invites. You’re in.
+          </p>
+          <button
+            onClick={() => window.dispatchEvent(new Event('ripple:openInfo'))}
+            aria-label="How this works"
+            className="absolute top-1/2 -translate-y-1/2 -right-14 w-10 h-10 rounded-full flex items-center justify-center bg-blue-600 text-white transition-all duration-200 hover:bg-blue-700 shadow-lg ring-2 ring-blue-300/30 hover:ring-blue-400/40"
+          >
+            <Info className="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </section>
   );

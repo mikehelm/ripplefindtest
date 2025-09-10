@@ -27,8 +27,10 @@ export function FactSection({ famousNames, currentNameIndex, isNameTransitioning
         <div className="supporting-text section-text text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
           <div className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-8 border-2 border-gray-200 dark:border-gray-700 max-w-2xl mx-auto shadow-lg mb-6">
             <div className="supporting-text section-text text-gray-700 dark:text-gray-300 leading-snug">
-              <p className="mb-2">You&apos;re only five connections away from anyone on Earth.</p>
-              <p>That includes billionaires, inventors, future icons.</p>
+              <p className="mb-2">You’re five connections away from anyone on Earth.</p>
+              <p>That includes &ldquo;Future Icons&rdquo;.</p>
+              <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">This is called the &lsquo;six degrees of separation,&rsquo; a well-documented social science principle.</p>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">The world has gotten smaller, hence &lsquo;Five.&rsquo;</p>
             </div>
           </div>
           <div className="text-2xl font-bold text-gray-800 dark:text-gray-200 leading-tight text-center">

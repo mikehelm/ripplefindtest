@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "db:apply:init": "scripts/db-apply.sh supabase/migrations/2025-09-09_initial_schema.sql",
+    "predev": "bash -c 'kill -9 $(lsof -t -i :4000) 2>/dev/null || true'",
     "dev": "NODE_OPTIONS='--max_old_space_size=4096 --no-warnings' next dev -p 4000",
     "build": "NODE_OPTIONS='--max_old_space_size=8192 --no-warnings' next build",
     "start": "next start",
@@ -60,7 +61,7 @@
     "helmet": "^8.1.0",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.446.0",
-    "next": "^14.2.10",
+    "next": "14.2.10",
     "next-themes": "^0.3.0",
     "postcss": "8.4.30",
     "react": "18.2.0",

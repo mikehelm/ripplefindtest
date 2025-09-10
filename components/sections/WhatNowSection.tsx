@@ -2,18 +2,19 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useCallback } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, GripVertical, ChevronRight, Info, X } from 'lucide-react';
+import { ArrowRight, GripVertical, ChevronRight, Info, X, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { WavesBackground } from '@/components/WavesBackground';
-import { useInvite } from '@/context/InviteContext';
 
 interface WhatNowSectionProps {
   onTitleClick?: () => void;
+  ctaHref?: string;
+  invitedFirstName?: string;
 }
 
-export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
-  const { invitedFirstName } = useInvite();
+export function WhatNowSection({ onTitleClick, ctaHref, invitedFirstName }: WhatNowSectionProps) {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
@@ -23,10 +24,12 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
   const [isSliding, setIsSliding] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [isMouseOverSidebar, setIsMouseOverSidebar] = useState(false);
+  const isMouseOverSidebarRef = useRef(false);
   const [showInfoPopup, setShowInfoPopup] = useState(false);
   const [showDemoEnd, setShowDemoEnd] = useState(false);
   const tabRef = useRef<HTMLDivElement>(null);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+  const [ignoreHoverUntil, setIgnoreHoverUntil] = useState<number | null>(null);
   const [frozenPreviewText, setFrozenPreviewText] = useState<string | null>(null);
   const [ctaSourceRef, setCtaSourceRef] = useState<'main' | 'floater' | null>(null);
   
@@ -113,13 +116,18 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
   }, [isMouseOverSidebar]);
 
   // Handle mouse enter/leave for scroll isolation
-  const handleSidebarMouseEnter = () => {
+  const handleSidebarMouseEnter = (e?: React.MouseEvent) => {
     setIsMouseOverSidebar(true);
+    isMouseOverSidebarRef.current = true;
     sidebarHoverCountRef.current += 1;
     logEvent('sidebar_hover_enter');
     if (!isMobile) {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
+      }
+      // Respect cooldown after manual close via tab click
+      if (ignoreHoverUntil && Date.now() < ignoreHoverUntil) {
+        return;
       }
       setIsPanelOpen(true);
     }
@@ -127,10 +135,13 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
 
   const handleSidebarMouseLeave = () => {
     setIsMouseOverSidebar(false);
+    isMouseOverSidebarRef.current = false;
     logEvent('sidebar_hover_leave');
     if (!isMobile) {
       timeoutRef.current = setTimeout(() => {
-        setIsPanelOpen(false);
+        if (!isMouseOverSidebarRef.current) {
+          setIsPanelOpen(false);
+        }
       }, 2000);
     }
   };
@@ -175,13 +186,17 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
   // then auto-close after a short delay unless the user hovers over it.
   useEffect(() => {
     if (!isMobile && showPanel) {
+      // Respect cooldown: do not auto-open while cooldown active
+      if (ignoreHoverUntil && Date.now() < ignoreHoverUntil) {
+        return;
+      }
       // Open right away on arrival
       setIsPanelOpen(true);
 
       // Schedule auto-close unless the user interacts by hovering
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
-        if (!isMouseOverSidebar) {
+        if (!isMouseOverSidebarRef.current) {
           setIsPanelOpen(false);
         }
       }, 3000); // 3s grace period
@@ -191,7 +206,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [showPanel, isMobile, isMouseOverSidebar]);
+  }, [showPanel, isMobile, isMouseOverSidebar, ignoreHoverUntil]);
 
   // Track sidebar open/close durations
   useEffect(() => {
@@ -266,15 +281,25 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
   const handleTouchStart = (e: React.TouchEvent) => {
     if (isMobile) {
       e.preventDefault();
-      setIsPanelOpen(!isPanelOpen);
+      // Toggle, but block opening during cooldown
+      if (isPanelOpen) {
+        setIsPanelOpen(false);
+      } else {
+        if (ignoreHoverUntil && Date.now() < ignoreHoverUntil) {
+          return;
+        }
+        setIsPanelOpen(true);
+      }
     }
   };
 
   // Helper: close info popup and re-open sidebar (if visible)
   const closeInfoPopup = () => {
     setShowInfoPopup(false);
-    // Re-open sidebar when popup closes to restore context
-    setIsPanelOpen(true);
+    // Re-open sidebar when popup closes to restore context, unless in cooldown
+    if (!(ignoreHoverUntil && Date.now() < ignoreHoverUntil)) {
+      setIsPanelOpen(true);
+    }
   };
 
   const handleClickOutside = useCallback((e: MouseEvent) => {
@@ -317,7 +342,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
             ? 'cubic-bezier(0.25, 0.46, 0.45, 0.94)' 
             : 'cubic-bezier(0.55, 0.06, 0.68, 0.19)'
         }}
-        onMouseEnter={handleSidebarMouseEnter}
+        onMouseEnter={(e) => handleSidebarMouseEnter(e)}
         onMouseLeave={handleSidebarMouseLeave}
       >
         {/* Panel Content */}
@@ -326,10 +351,10 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
           className="w-[360px] h-full bg-white dark:bg-gray-800 shadow-2xl rounded-r-xl flex flex-col example-sidebar"
         >
           {/* Top padding/spacing */}
-          <div className="h-8 flex-shrink-0"></div>
+          <div className="h-20 flex-shrink-0"></div>
           
           {/* Scrollable content */}
-          <div className="sidebar-content flex-1 overflow-y-auto px-8 pb-8">
+          <div className="sidebar-content flex-1 overflow-y-auto px-8 pt-6 pb-8">
             <h2 className="text-2xl font-bold text-black dark:text-white mb-6 font-sans">
               {invitedFirstName ? `${invitedFirstName}, this could be your story:` : 'This could be your story:'}
             </h2>
@@ -358,17 +383,6 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
             {/* Divider */}
             <div className="mb-8 text-center">
               <span className="text-gray-400 dark:text-gray-500 text-lg">⸻</span>
-            </div>
-
-            {/* Info Icon */}
-            <div className="relative mb-2 flex justify-end pr-2">
-              <button
-                onClick={() => setShowInfoPopup(true)}
-                className="w-6 h-6 bg-blue-500 hover:bg-blue-600 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-md"
-                aria-label="How this works"
-              >
-                <Info className="w-3.5 h-3.5 text-white" />
-              </button>
             </div>
 
             <div className="mb-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg -mt-2">
@@ -443,6 +457,13 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
                 </li>
               </ul>
             </div>
+            
+            {/* Bottom explanatory sentence */}
+            <div className="mt-6 mb-2 flex items-center justify-center">
+              <p className="text-sm text-gray-600 dark:text-gray-300 text-center max-w-xs leading-relaxed">
+                If this model existed when Facebook started, being even five steps away could have earned you $760M. That’s the power of ripple introductions.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -452,6 +473,15 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
             showPanel ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
           onTouchStart={handleTouchStart}
+          onClick={() => {
+            if (isPanelOpen) {
+              setIsPanelOpen(false);
+              logEvent('tab_close_click');
+              // Add a short cooldown to prevent immediate re-open from hover
+              setIgnoreHoverUntil(Date.now() + 1000);
+            }
+          }}
+          aria-label={isPanelOpen ? 'Close sidebar' : 'Sidebar handle'}
           ref={tabRef}
         >
           <div className="flex flex-col items-center justify-center h-full space-y-2">
@@ -464,7 +494,7 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
                 transform: 'rotate(180deg)'
               }}
             >
-              EXAMPLE
+              {isPanelOpen ? '' : 'Example'}
             </span>
             
             {/* Drag handle icon */}
@@ -528,66 +558,58 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
       {/* Info Popup */}
       {showInfoPopup && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4" onClick={closeInfoPopup}>
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-lg w-full shadow-2xl border border-gray-200 dark:border-gray-700 relative" onClick={(e) => e.stopPropagation()}>
+          <div className="rounded-3xl p-8 md:p-10 max-w-2xl w-full shadow-[0_20px_70px_-20px_rgba(0,0,0,0.6)] border border-white/10 dark:border-white/10 bg-white/90 dark:bg-slate-900/80 relative ring-1 ring-black/5" onClick={(e) => e.stopPropagation()}>
+            <div className="absolute -top-8 -left-6">
+              <div className="relative w-16 h-16 rounded-full bg-white/10 backdrop-blur-md ring-1 ring-white/20 shadow-xl flex items-center justify-center">
+                <img
+                  src="/images/Foundermatching_logo.png"
+                  alt="Founder Matching Logo"
+                  className="w-3/4 h-3/4 object-contain"
+                  style={{ filter: 'brightness(0) invert(1)' }}
+                />
+              </div>
+            </div>
             <button
               onClick={closeInfoPopup}
-              className="absolute top-4 right-4 w-10 h-10 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors"
+              className="absolute top-4 right-4 w-8 h-8 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors"
             >
-              <X className="w-4.5 h-4.5 text-gray-600 dark:text-gray-300" />
+              <X className="w-4 h-4 text-gray-600 dark:text-gray-300" />
             </button>
             
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 text-center">Founder Matching Limited</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-5 text-center">What we do and how we compensate you</p>
-            <p className="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed">
-              We help founders build companies by finding co-founders who share their vision and earn ownership.
+            <h3 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white mb-2 text-center tracking-tight">Founder Matching Limited</h3>
+            <p className="text-sm md:text-base text-blue-600 dark:text-blue-400 font-semibold mb-7 text-center tracking-wide">
+              Think Tinder for Startups
             </p>
             
-            <div className="space-y-5 text-gray-700 dark:text-gray-300 leading-relaxed">
-              <p>When a match happens, we earn 1–2% equity and share 50% of that with the referral chain.</p>
-              <p>Rewards are distributed across the first five connections in the chain.</p>
-
-              <div className="rounded-lg border border-blue-300/30 bg-blue-900/20 p-4">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">How Rewards Are Shared</h4>
-                <div className="grid grid-cols-2 gap-x-3 text-sm">
-                  <div className="font-semibold text-gray-800 dark:text-gray-200">Level</div>
-                  <div className="text-right font-semibold text-gray-800 dark:text-gray-200">Share of Our Stake</div>
-
-                  <div className="col-span-2 h-px bg-blue-200/40 dark:bg-blue-700/40 my-1"></div>
-
-                  <div className="py-2">Direct</div>
-                  <div className="py-2 text-right">20%</div>
-
-                  <div className="col-span-2 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
-
-                  <div className="py-2">2nd</div>
-                  <div className="py-2 text-right">10%</div>
-
-                  <div className="col-span-2 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
-
-                  <div className="py-2">3rd</div>
-                  <div className="py-2 text-right">5%</div>
-
-                  <div className="col-span-2 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
-
-                  <div className="py-2">4th</div>
-                  <div className="py-2 text-right">3%</div>
-
-                  <div className="col-span-2 h-px bg-blue-200/20 dark:bg-blue-700/20"></div>
-
-                  <div className="py-2">5th</div>
-                  <div className="py-2 text-right">2%</div>
-
-                  <div className="col-span-2 h-px bg-blue-200/40 dark:bg-blue-700/40 mt-2"></div>
-                  <div className="col-span-2 text-xs text-gray-600 dark:text-gray-300 pt-2">Percentages shown are the portion of our equity share that you earn at each distance.</div>
-                </div>
-              </div>
-
-              <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg border-l-4 border-yellow-400">
-                <p className="font-semibold text-gray-900 dark:text-white">
-                  <a href="/affiliates-apply" target="_blank" rel="noopener noreferrer" className="underline decoration-yellow-600/70 underline-offset-2 hover:decoration-yellow-600">
-                    Separate pool: 10% of our share is reserved for affiliates and influencers. Click to apply.
-                  </a>
-                </p>
+            <div className="space-y-5 text-slate-700 dark:text-slate-200 leading-relaxed text-[15px] md:text-base">
+              <p className="text-justify/auto">
+                Imagine how many people dream of starting a company with a big idea, but never move forward because they don&apos;t know the right people to join them. And imagine how many talented people wake up every day stuck in jobs they don&apos;t love, wishing they could pour their skills into a project they believe in.
+              </p>
+              
+              <p className="text-justify/auto">
+                That&apos;s where we come in. Founder Matching lets you swipe, connect, and find the co-founders who can help turn your vision into reality. With AI, ideas can accelerate faster than ever — but it will never replace co-founders who share your passion and vision.
+              </p>
+              
+              <p className="text-justify/auto">
+                When these matches succeed, real companies are built. We take a small equity share (1–2%) — and we share part of that with you, because we couldn&apos;t do it without you.
+              </p>
+              
+              <div className="mt-6 space-y-4">
+                <h4 className="font-semibold text-gray-900 dark:text-white">Our mission is simple:</h4>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 text-blue-500/90" />
+                    <span>Help founders find their first teammates.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 text-blue-500/90" />
+                    <span>Give talented people the chance to join projects they believe in.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 text-blue-500/90" />
+                    <span>Turn everyday introductions into real ownership.</span>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
@@ -614,17 +636,49 @@ export function WhatNowSection({ onTitleClick }: WhatNowSectionProps) {
             What Now?
           </h1>
           
-          <Button 
-            onClick={() => handleStartRipple('main')}
-            className="bg-white text-blue-600 hover:bg-gray-50 font-bold px-12 py-6 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 text-xl"
-          >
-            Start Your Ripple
-            <ArrowRight className="ml-3 w-6 h-6" />
-          </Button>
+          {ctaHref ? (
+            <Link href={ctaHref} prefetch={false}>
+              <Button 
+                className="bg-white text-blue-600 hover:bg-gray-50 font-bold px-12 py-6 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 text-xl"
+              >
+                Start Your Ripple
+                <ArrowRight className="ml-3 w-6 h-6" />
+              </Button>
+            </Link>
+          ) : (
+            <Button 
+              onClick={() => handleStartRipple('main')}
+              className="bg-white text-blue-600 hover:bg-gray-50 font-bold px-12 py-6 rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 text-xl"
+            >
+              Start Your Ripple
+              <ArrowRight className="ml-3 w-6 h-6" />
+            </Button>
+          )}
           
           <div className="supporting-text text-blue-100 dark:text-blue-200 max-w-2xl mx-auto leading-relaxed mt-8 text-lg italic text-center">
-            <p>If you did this before Zuck made Facebook</p>
-            <p>You would be worth about $760 million dollars today</p>
+            <p>Before someone else claims the opportunities that could flow through you.</p>
+          </div>
+        </div>
+
+        {/* Bottom-of-page callout */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 max-w-3xl w-full px-4">
+          <div className="bg-transparent border border-white/50 dark:border-white/30 rounded-2xl p-4 sm:p-5 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)]">
+            <p className="text-sm sm:text-base text-white dark:text-white text-center mb-1">
+              Curious about the company behind RippleFind?
+            </p>
+            <p className="text-sm sm:text-base text-white dark:text-white text-center mb-3">
+              Learn how they&apos;re enabling startups.
+            </p>
+            <div className="flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => setShowInfoPopup(true)}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm sm:text-base shadow-md"
+                aria-label="About Founder Matching"
+              >
+                About Founder Matching
+              </button>
+            </div>
           </div>
         </div>
       </section>

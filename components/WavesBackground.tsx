@@ -20,9 +20,23 @@ interface WavesBackgroundProps {
     maxHeightRatio?: number; // 0..1 of canvas height from bottom where bubble is removed
     baseAlpha?: number; // 0..1 starting alpha
   };
+  particleOptions?: {
+    enabled?: boolean;
+    count?: number; // how many particles in the flock
+    yBaseRatio?: number; // 0..1 baseline height as fraction of canvas
+    amplitude?: number; // px vertical sine amplitude
+    speed?: number; // base horizontal speed (positive for LTR, negative for RTL)
+    sizeBase?: number; // base radius
+    sizeWobble?: number; // size wobble factor
+    alpha?: number; // 0..1
+  };
+  // New: allow disabling waves and only render particles
+  drawWaves?: boolean;
+  // New: explicit particle direction; overrides sign of speed
+  particleDirection?: 'ltr' | 'rtl';
 }
 
-export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10', onWaveUpdate, baselineRatio = 0.4, bubbleOptions }: WavesBackgroundProps) {
+export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10', onWaveUpdate, baselineRatio = 0.4, bubbleOptions, particleOptions, drawWaves = true, particleDirection }: WavesBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
   const darkenRef = useRef<number>(0);
@@ -174,118 +188,151 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10', onWa
         { amplitude: 48.75, frequency: 0.009, speed: 0.01125, opacity: 1, color: '30, 58, 138' } // dark blue (wider wavelength, speed -25%)
       ];
 
-      // Choose which layers to draw based on variant
-      // Front: blue (index 0). Behind: purple (index 2) + teal (index 1) for depth.
-      const indices = variant === 'front' ? [0] : [2, 1];
-      const waves = indices.map(i => {
-        const w = { ...baseWaves[i] };
-        if (variant === 'front') {
-          // Reduce front wave height by 50%
-          w.amplitude = w.amplitude * 0.5;
-        } else {
-          // Behind waves: slow back wave by 50%, middle wave by 25%
-          if (i === 2) w.speed = w.speed * 0.5; // back
-          if (i === 1) w.speed = w.speed * 0.75; // middle
-        }
-        return w;
-      });
-
-      // Scroll-driven parallax: front > middle > back, converge to equal as exiting
-      const p = scrollProgressRef.current;
-      const ps = (p < 0.0001) ? 0 : (p > 0.9999 ? 1 : (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2)); // easeInOutCubic inline
-      const maxLift = canvas.height * 0.28; // stronger upward shift for max effect
-      const depthStartMultiplier = { front: 1.6, middle: 1.3, back: 1.0 } as const; // front fastest, then middle
-      // Start with waves lower on screen so the card is not underwater at the beginning
-      const startDropPx = canvas.height * 0.20;
-      const startOffset = startDropPx * (1 - ps);
-      // Depth-based start offset so the front wave starts lowest
-      const depthStartOffsetMultiplier = { front: 1.6, middle: 1.1, back: 0.9 } as const;
-
-      waves.forEach((wave, index) => {
-        ctx.beginPath();
-        // Start from the left bottom corner
-        ctx.moveTo(0, canvas.height);
-
-        // Determine depth for this layer and compute vertical shift
-        let depth: 'front' | 'middle' | 'back' = 'front';
-        if (variant === 'behind') {
-          depth = indices[index] === 2 ? 'back' : 'middle';
-        } else {
-          depth = 'front';
-        }
-        const startMul = depthStartMultiplier[depth];
-        const effectiveMul = startMul + (1 - startMul) * ps; // lerp to 1 as ps -> 1
-        const verticalShift = maxLift * ps * effectiveMul;
-        const depthStartOffset = startOffset * depthStartOffsetMultiplier[depth];
-
-        // Create wave path
-        for (let x = 0; x <= canvas.width; x += 4) {
-          const y = canvas.height * baselineRatio - verticalShift + depthStartOffset + Math.sin((x * wave.frequency) + time * wave.speed) * wave.amplitude;
-          if (x === 0) {
-            ctx.lineTo(x, y);
+      // Only compute/draw waves if requested
+      if (drawWaves) {
+        // Choose which layers to draw based on variant
+        // Front: blue (index 0). Behind: purple (index 2) + teal (index 1) for depth.
+        const indices = variant === 'front' ? [0] : [2, 1];
+        const waves = indices.map(i => {
+          const w = { ...baseWaves[i] };
+          if (variant === 'front') {
+            // Reduce front wave height by 50%
+            w.amplitude = w.amplitude * 0.5;
           } else {
-            ctx.lineTo(x, y);
+            // Behind waves: slow back wave by 50%, middle wave by 25%
+            if (i === 2) w.speed = w.speed * 0.5; // back
+            if (i === 1) w.speed = w.speed * 0.75; // middle
           }
+          return w;
+        });
+
+        // Scroll-driven parallax: front > middle > back, converge to equal as exiting
+        const p = scrollProgressRef.current;
+        const ps = (p < 0.0001) ? 0 : (p > 0.9999 ? 1 : (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2)); // easeInOutCubic inline
+        const maxLift = canvas.height * 0.28; // stronger upward shift for max effect
+        const depthStartMultiplier = { front: 1.6, middle: 1.3, back: 1.0 } as const; // front fastest, then middle
+        // Start with waves lower on screen so the card is not underwater at the beginning
+        const startDropPx = canvas.height * 0.20;
+        const startOffset = startDropPx * (1 - ps);
+        // Depth-based start offset so the front wave starts lowest
+        const depthStartOffsetMultiplier = { front: 1.6, middle: 1.1, back: 0.9 } as const;
+
+        waves.forEach((wave, index) => {
+          ctx.beginPath();
+          // Start from the left bottom corner
+          ctx.moveTo(0, canvas.height);
+
+          // Determine depth for this layer and compute vertical shift
+          let depth: 'front' | 'middle' | 'back' = 'front';
+          if (variant === 'behind') {
+            depth = (variant === 'behind' && (indices[index] === 2)) ? 'back' : 'middle';
+          } else {
+            depth = 'front';
+          }
+          const startMul = depthStartMultiplier[depth];
+          const effectiveMul = startMul + (1 - startMul) * ps; // lerp to 1 as ps -> 1
+          const verticalShift = maxLift * ps * effectiveMul;
+          const depthStartOffset = startOffset * depthStartOffsetMultiplier[depth];
+
+          // Create wave path
+          for (let x = 0; x <= canvas.width; x += 4) {
+            const y = canvas.height * baselineRatio - verticalShift + depthStartOffset + Math.sin((x * wave.frequency) + time * wave.speed) * wave.amplitude;
+            if (x === 0) {
+              ctx.lineTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+          }
+
+          // Complete the wave shape
+          ctx.lineTo(canvas.width, canvas.height);
+          ctx.lineTo(0, canvas.height);
+          ctx.closePath();
+
+          // Fill with gradient
+          if (variant === 'front') {
+            // Start the fade at the crest of the front wave and darken towards the bottom
+            const crestY = canvas.height * baselineRatio - verticalShift + depthStartOffset - wave.amplitude;
+            // Start higher above the crest so the top is even more transparent over the card/text
+            const gradient = ctx.createLinearGradient(0, Math.max(0, crestY - 20), 0, canvas.height);
+
+            // Reference colors for a smooth transition from the front wave into the darker section
+            const frontBase = baseWaves[0].color; // lighter blue
+            const midBase = baseWaves[1].color;   // medium blue
+            const backBase = baseWaves[2].color;  // darkest blue (matches behind/next section tone)
+
+            const frontCol = darkenColor(frontBase, darkenRef.current);
+            const midCol = darkenColor(midBase, darkenRef.current);
+            const backCol = darkenColor(backBase, darkenRef.current);
+
+            // Softer occlusion with a delayed, slower ramp so the fade is less abrupt
+            // Start occlusion after ~15% progress and ease it in more gently
+            const occlRaw = Math.max(0, (ps - 0.15) / 0.85);
+            const occl = Math.min(1, occlRaw * 0.8); // reduce overall strength
+            const scaleAlpha = (a: number) => Math.max(0, Math.min(1, a * (1 + 0.6 * occl)));
+            // Deeper, more spread-out stops for a slower fade
+            gradient.addColorStop(0.0, `rgba(${frontCol}, ${scaleAlpha(0.04)})`);
+            gradient.addColorStop(0.25, `rgba(${midCol}, ${scaleAlpha(0.28)})`);
+            gradient.addColorStop(0.55, `rgba(${midCol}, ${scaleAlpha(0.6)})`);
+            // Use an extra-darkened bottom color to ensure it matches the next section's dark band
+            const extraDarkBottom = darkenColor(backBase, Math.min(1, darkenRef.current + 0.35));
+            gradient.addColorStop(0.85, `rgba(${extraDarkBottom}, ${scaleAlpha(0.9)})`);
+            gradient.addColorStop(1.0, `rgba(${extraDarkBottom}, ${scaleAlpha(0.98)})`);
+            ctx.fillStyle = gradient;
+          } else {
+            // Background waves: solid color
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            const c = darkenColor(wave.color, darkenRef.current);
+            gradient.addColorStop(0, `rgba(${c}, ${wave.opacity})`);
+            gradient.addColorStop(1, `rgba(${c}, ${wave.opacity})`);
+            ctx.fillStyle = gradient;
+          }
+          
+          ctx.fill();
+        });
+
+        // Emit middle-wave Y position at canvas center for consumers
+        if (onWaveUpdate) {
+          const mid = baseWaves[1];
+          const centerX = canvas.width / 2;
+          const midPs = ps;
+          const midVerticalShift = maxLift * midPs * (1.2 + (1 - 1.2) * midPs);
+          const middleDepthStartOffset = startOffset * depthStartOffsetMultiplier.middle;
+          const y = canvas.height * baselineRatio - midVerticalShift + middleDepthStartOffset + Math.sin((centerX * mid.frequency) + time * mid.speed) * mid.amplitude;
+          try {
+            onWaveUpdate(y);
+          } catch {}
         }
+      }
 
-        // Complete the wave shape
-        ctx.lineTo(canvas.width, canvas.height);
-        ctx.lineTo(0, canvas.height);
-        ctx.closePath();
-
-        // Fill with gradient
-        if (variant === 'front') {
-          // Start the fade at the crest of the front wave and darken towards the bottom
-          const crestY = canvas.height * baselineRatio - verticalShift + depthStartOffset - wave.amplitude;
-          // Start higher above the crest so the top is even more transparent over the card/text
-          const gradient = ctx.createLinearGradient(0, Math.max(0, crestY - 20), 0, canvas.height);
-
-          // Reference colors for a smooth transition from the front wave into the darker section
-          const frontBase = baseWaves[0].color; // lighter blue
-          const midBase = baseWaves[1].color;   // medium blue
-          const backBase = baseWaves[2].color;  // darkest blue (matches behind/next section tone)
-
-          const frontCol = darkenColor(frontBase, darkenRef.current);
-          const midCol = darkenColor(midBase, darkenRef.current);
-          const backCol = darkenColor(backBase, darkenRef.current);
-
-          // Softer occlusion with a delayed, slower ramp so the fade is less abrupt
-          // Start occlusion after ~15% progress and ease it in more gently
-          const occlRaw = Math.max(0, (ps - 0.15) / 0.85);
-          const occl = Math.min(1, occlRaw * 0.8); // reduce overall strength
-          const scaleAlpha = (a: number) => Math.max(0, Math.min(1, a * (1 + 0.6 * occl)));
-          // Deeper, more spread-out stops for a slower fade
-          gradient.addColorStop(0.0, `rgba(${frontCol}, ${scaleAlpha(0.04)})`);
-          gradient.addColorStop(0.25, `rgba(${midCol}, ${scaleAlpha(0.28)})`);
-          gradient.addColorStop(0.55, `rgba(${midCol}, ${scaleAlpha(0.6)})`);
-          // Use an extra-darkened bottom color to ensure it matches the next section's dark band
-          const extraDarkBottom = darkenColor(backBase, Math.min(1, darkenRef.current + 0.35));
-          gradient.addColorStop(0.85, `rgba(${extraDarkBottom}, ${scaleAlpha(0.9)})`);
-          gradient.addColorStop(1.0, `rgba(${extraDarkBottom}, ${scaleAlpha(0.98)})`);
-          ctx.fillStyle = gradient;
-        } else {
-          // Background waves: solid color
-          const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-          const c = darkenColor(wave.color, darkenRef.current);
-          gradient.addColorStop(0, `rgba(${c}, ${wave.opacity})`);
-          gradient.addColorStop(1, `rgba(${c}, ${wave.opacity})`);
-          ctx.fillStyle = gradient;
+      // --- Simple left-to-right floating white particles (flock) ---
+      const po = {
+        enabled: false,
+        count: 5,
+        yBaseRatio: 0.3,
+        amplitude: 20,
+        speed: 0.5, // affects x drift; multiplied by time
+        sizeBase: 2,
+        sizeWobble: 1,
+        alpha: 0.8,
+        ...particleOptions,
+      } as NonNullable<typeof particleOptions> & { enabled: boolean; };
+      if (po.enabled) {
+        const dir = particleDirection ? (particleDirection === 'rtl' ? -1 : 1) : (po.speed >= 0 ? 1 : -1);
+        const spd = Math.abs(po.speed);
+        const period = canvas.width + 50;
+        for (let i = 0; i < po.count; i++) {
+          const progress = (time * spd + i * 100) % period;
+          const baseX = progress; // 0..period
+          const x = dir >= 0 ? baseX : (period - baseX);
+          const xClamped = Math.max(-50, Math.min(canvas.width + 50, x));
+          const y = canvas.height * po.yBaseRatio + Math.sin(time * 0.01 + i) * po.amplitude;
+          const r = (po.sizeBase + Math.sin(time * 0.02 + i) * po.sizeWobble) * 1.3;
+          ctx.beginPath();
+          ctx.arc(xClamped, y, r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${po.alpha})`;
+          ctx.fill();
         }
-        
-        ctx.fill();
-      });
-
-      // Emit middle-wave Y position at canvas center for consumers
-      if (onWaveUpdate) {
-        const mid = baseWaves[1];
-        const centerX = canvas.width / 2;
-        const midPs = ps;
-        const midVerticalShift = maxLift * midPs * (1.2 + (1 - 1.2) * midPs);
-        const middleDepthStartOffset = startOffset * depthStartOffsetMultiplier.middle;
-        const y = canvas.height * baselineRatio - midVerticalShift + middleDepthStartOffset + Math.sin((centerX * mid.frequency) + time * mid.speed) * mid.amplitude;
-        try {
-          onWaveUpdate(y);
-        } catch {}
       }
 
       time += 1;
@@ -312,7 +359,7 @@ export function WavesBackground({ variant = 'behind', zIndexClass = 'z-10', onWa
       window.removeEventListener('scroll', onScroll as EventListener);
       mql && mql.removeEventListener && mql.removeEventListener('change', handleSchemeChange);
     };
-  }, [variant, onWaveUpdate, baselineRatio, bubbleOptions]);
+  }, [variant, onWaveUpdate, baselineRatio, bubbleOptions, drawWaves, particleDirection]);
 
   return (
     <canvas

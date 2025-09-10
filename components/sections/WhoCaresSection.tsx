@@ -30,22 +30,15 @@ export function WhoCaresSection({ onTitleClick }: WhoCaresProps) {
           
           <div className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-8 border-2 border-gray-200 dark:border-gray-700 max-w-2xl mx-auto shadow-lg mb-6">
             <div className="supporting-text section-text text-gray-700 dark:text-gray-300 leading-snug">
-              <p className="mb-2">When your ripple helps start a billion-dollar company</p>
-              <p>You earn a piece for helping them get there</p>
+              <p className="mb-2">If your ripple helps start a successful company, you earn a share for playing a part.</p>
             </div>
           </div>
           
-          {/* Yellow callout with an eye just outside to the right */}
+          {/* Yellow callout (eye removed as requested) */}
           <div className="relative inline-block">
             <p className="text-xl font-bold bg-yellow-200 dark:bg-yellow-300 text-gray-900 dark:text-gray-800 px-3 py-1 rounded-lg inline-block">You could own a piece of multiple startups</p>
-            <button
-              onClick={handleOpenInfo}
-              aria-label="How this works"
-              className={`absolute top-1/2 -translate-y-1/2 -right-14 w-10 h-10 rounded-full flex items-center justify-center bg-blue-600 text-white transition-all duration-200 hover:bg-blue-700 ${eyeClicked ? 'shadow-md' : 'shadow-lg ring-2 ring-blue-300/30 hover:ring-blue-400/40'}`}
-            >
-              <Info className="w-5 h-5" />
-            </button>
           </div>
+          <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">This isn’t theory — this is how we’re structuring real ownership in real startups.</p>
         </div>
       </div>
     </section>
